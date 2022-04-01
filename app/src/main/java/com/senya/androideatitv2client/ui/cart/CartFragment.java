@@ -1,5 +1,7 @@
 package com.senya.androideatitv2client.ui.cart;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.media.metrics.Event;
 import android.os.Bundle;
@@ -10,6 +12,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +48,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -62,6 +68,67 @@ public class CartFragment extends Fragment {
     TextView txt_empty_cart;
     @BindView(R.id.group_place_holder)
     CardView group_place_holder;
+
+    @OnClick(R.id.btn_place_order)
+    void onPlaceOrderClick(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Last step");
+
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_place_order, null);
+
+        EditText edt_address = (EditText)view.findViewById(R.id.edt_address);
+        RadioButton rdi_home = (RadioButton)view.findViewById(R.id.rdi_home_address);
+        RadioButton rdi_other_address = (RadioButton)view.findViewById(R.id.rdi_other_address);
+        RadioButton rdi_ship_to_this = (RadioButton)view.findViewById(R.id.rdi_ship_this_address);
+        RadioButton rdi_cod = (RadioButton)view.findViewById(R.id.rdi_cod);
+        RadioButton rdi_braintree = (RadioButton)view.findViewById(R.id.rdi_braintree);
+
+        //Data
+        edt_address.setText(Common.currentUser.getAddress()); //User`s home address by default
+
+        //Event
+        rdi_home.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked)
+                {
+                    edt_address.setText(Common.currentUser.getAddress());
+                }
+            }
+        });
+        rdi_other_address.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked)
+                {
+                    edt_address.setText("");
+                    edt_address.setHint("Enter your address");
+                }
+            }
+        });
+        rdi_ship_to_this.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked)
+                {
+                    Toast.makeText(getContext(), "Implement later with google api", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
+        builder.setView(view);
+        builder.setNegativeButton("NO", (dialog, which) -> {
+            dialog.dismiss();
+        }).setPositiveButton("YES", (dialog, which) -> {
+            Toast.makeText(getContext(), "Implement later", Toast.LENGTH_SHORT).show();
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+    }
 
     private MyCartAdapter adapter;
 
@@ -159,7 +226,7 @@ public class CartFragment extends Fragment {
 
                     @Override
                     public void onSuccess(Double aDouble) {
-                        txt_total_price.setText(new StringBuilder().append(aDouble));
+                        txt_total_price.setText(new StringBuilder("Total: $").append(aDouble));
                     }
 
                     @Override
@@ -268,7 +335,7 @@ public class CartFragment extends Fragment {
 
                     @Override
                     public void onSuccess(Double price) {
-                        txt_total_price.setText(new StringBuilder("Total: ")
+                        txt_total_price.setText(new StringBuilder("Total: $")
                         .append(Common.formatPrice(price)));
                     }
 

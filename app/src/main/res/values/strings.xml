@@ -34,4 +34,11 @@
     <string name="cart">Cart</string>
     <string name="_100_0">100.0</string>
     <string name="action_clear_cart">Clear Cart</string>
+    <string name="delivery_method">Delivery method</string>
+    <string name="home_address">Home Address</string>
+    <string name="another_address">Another Address</string>
+    <string name="deliver_to_this_address">Deliver to this address</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="cash_payment">Cash Payment</string>
+    <string name="braintree">Braintree</string>
 </resources>
