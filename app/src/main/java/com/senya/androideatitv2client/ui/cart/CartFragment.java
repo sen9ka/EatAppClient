@@ -1,10 +1,14 @@
 package com.senya.androideatitv2client.ui.cart;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
 import android.media.metrics.Event;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,6 +25,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -28,6 +33,14 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.senya.androideatitv2client.Adapter.MyCartAdapter;
 import com.senya.androideatitv2client.Common.Common;
 import com.senya.androideatitv2client.Common.MySwipeHelper;
@@ -60,6 +73,11 @@ public class CartFragment extends Fragment {
     private Parcelable recyclerViewState;
     private CartDataSource cartDataSource;
 
+    LocationRequest locationRequest;
+    LocationCallback locationCallback;
+    FusedLocationProviderClient fusedLocationProviderClient;
+    Location currentLocation;
+
     @BindView(R.id.recycler_cart)
     RecyclerView recycler_cart;
     @BindView(R.id.txt_total_price)
@@ -70,19 +88,21 @@ public class CartFragment extends Fragment {
     CardView group_place_holder;
 
     @OnClick(R.id.btn_place_order)
-    void onPlaceOrderClick(){
+    void onPlaceOrderClick() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Last step");
 
         View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_place_order, null);
 
-        EditText edt_address = (EditText)view.findViewById(R.id.edt_address);
-        RadioButton rdi_home = (RadioButton)view.findViewById(R.id.rdi_home_address);
-        RadioButton rdi_other_address = (RadioButton)view.findViewById(R.id.rdi_other_address);
-        RadioButton rdi_ship_to_this = (RadioButton)view.findViewById(R.id.rdi_ship_this_address);
-        RadioButton rdi_cod = (RadioButton)view.findViewById(R.id.rdi_cod);
-        RadioButton rdi_braintree = (RadioButton)view.findViewById(R.id.rdi_braintree);
+        EditText edt_address = (EditText) view.findViewById(R.id.edt_address);
+        EditText edt_comment = (EditText) view.findViewById(R.id.edt_comment);
+        TextView txt_address = (TextView) view.findViewById(R.id.txt_address_detail);
+        RadioButton rdi_home = (RadioButton) view.findViewById(R.id.rdi_home_address);
+        RadioButton rdi_other_address = (RadioButton) view.findViewById(R.id.rdi_other_address);
+        RadioButton rdi_ship_to_this = (RadioButton) view.findViewById(R.id.rdi_ship_this_address);
+        RadioButton rdi_cod = (RadioButton) view.findViewById(R.id.rdi_cod);
+        RadioButton rdi_braintree = (RadioButton) view.findViewById(R.id.rdi_braintree);
 
         //Data
         edt_address.setText(Common.currentUser.getAddress()); //User`s home address by default
@@ -91,29 +111,49 @@ public class CartFragment extends Fragment {
         rdi_home.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked)
-                {
+                if (isChecked) {
                     edt_address.setText(Common.currentUser.getAddress());
+                    txt_address.setVisibility(View.GONE);
                 }
             }
         });
         rdi_other_address.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked)
-                {
+                if (isChecked) {
                     edt_address.setText("");
                     edt_address.setHint("Enter your address");
+                    txt_address.setVisibility(View.GONE);
                 }
             }
         });
-        rdi_ship_to_this.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked)
-                {
-                    Toast.makeText(getContext(), "Implement later with google api", Toast.LENGTH_SHORT).show();
+        rdi_ship_to_this.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
                 }
+                fusedLocationProviderClient.getLastLocation()
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            txt_address.setVisibility(View.GONE);
+                        })
+                        .addOnCompleteListener(task -> {
+                            String coordinates = new StringBuilder()
+                            .append(task.getResult().getLatitude())
+                            .append("/")
+                            .append(task.getResult().getLongitude()).toString();
+
+                            edt_address.setText(coordinates);
+                            txt_address.setText("Implement later with google API, need billing project");
+                            txt_address.setVisibility(View.VISIBLE);
+                        });
             }
         });
 
@@ -140,31 +180,64 @@ public class CartFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         cartViewModel =
                 ViewModelProviders.of(this).get(CartViewModel.class);
-                View root = inflater.inflate(R.layout.fragment_cart, container, false);
-                cartViewModel.initCartDataSource(getContext());
-                cartViewModel.getMutableLiveDataCartItems().observe(this, new Observer<List<CartItem>>() {
-                    @Override
-                    public void onChanged(List<CartItem> cartItems) {
-                        if(cartItems == null || cartItems.isEmpty())
-                        {
-                            recycler_cart.setVisibility(View.GONE);
-                            group_place_holder.setVisibility(View.GONE);
-                            txt_empty_cart.setVisibility(View.VISIBLE);
-                        }
-                        else
-                        {
-                            recycler_cart.setVisibility(View.VISIBLE);
-                            group_place_holder.setVisibility(View.VISIBLE);
-                            txt_empty_cart.setVisibility(View.GONE);
+        View root = inflater.inflate(R.layout.fragment_cart, container, false);
+        cartViewModel.initCartDataSource(getContext());
+        cartViewModel.getMutableLiveDataCartItems().observe(this, new Observer<List<CartItem>>() {
+            @Override
+            public void onChanged(List<CartItem> cartItems) {
+                if (cartItems == null || cartItems.isEmpty()) {
+                    recycler_cart.setVisibility(View.GONE);
+                    group_place_holder.setVisibility(View.GONE);
+                    txt_empty_cart.setVisibility(View.VISIBLE);
+                } else {
+                    recycler_cart.setVisibility(View.VISIBLE);
+                    group_place_holder.setVisibility(View.VISIBLE);
+                    txt_empty_cart.setVisibility(View.GONE);
 
-                            adapter = new MyCartAdapter(getContext(), cartItems);
-                            recycler_cart.setAdapter(adapter);
-                        }
-                    }
-                });
-                unbinder = ButterKnife.bind(this,root);
-                initViews();
-                return root;
+                    adapter = new MyCartAdapter(getContext(), cartItems);
+                    recycler_cart.setAdapter(adapter);
+                }
+            }
+        });
+        unbinder = ButterKnife.bind(this, root);
+        initViews();
+        initLocation();
+        return root;
+    }
+
+    private void initLocation() {
+        buildLocationRequest();
+        buildLocationCallback();
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+    }
+
+    private void buildLocationCallback() {
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                currentLocation = locationResult.getLastLocation();
+            }
+        };
+    }
+
+    private void buildLocationRequest() {
+        locationRequest = new LocationRequest();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(5000);
+        locationRequest.setFastestInterval(3000);
+        locationRequest.setSmallestDisplacement(10f);
     }
 
     private void initViews() {
@@ -177,12 +250,12 @@ public class CartFragment extends Fragment {
         recycler_cart.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         recycler_cart.setLayoutManager(layoutManager);
-        recycler_cart.addItemDecoration(new DividerItemDecoration(getContext(),layoutManager.getOrientation()));
+        recycler_cart.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
 
-        MySwipeHelper mySwipeHelper = new MySwipeHelper(getContext(),recycler_cart,200) {
+        MySwipeHelper mySwipeHelper = new MySwipeHelper(getContext(), recycler_cart, 200) {
             @Override
             public void instantiateMyButton(RecyclerView.ViewHolder viewHolder, List<MyButton> buf) {
-                buf.add(new MyButton(getContext(),"Delete",30,0, Color.parseColor("#FF3C30"),
+                buf.add(new MyButton(getContext(), "Delete", 30, 0, Color.parseColor("#FF3C30"),
                         pos -> {
                             CartItem cartItem = adapter.getItemAtPosition(pos);
                             cartDataSource.deleteCartItem(cartItem)
@@ -204,7 +277,7 @@ public class CartFragment extends Fragment {
 
                                         @Override
                                         public void onError(Throwable e) {
-                                            Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                                         }
                                     });
                         }));
@@ -221,7 +294,7 @@ public class CartFragment extends Fragment {
                 .subscribe(new SingleObserver<Double>() {
                     @Override
                     public void onSubscribe(Disposable d) {
-                        
+
                     }
 
                     @Override
@@ -231,8 +304,8 @@ public class CartFragment extends Fragment {
 
                     @Override
                     public void onError(Throwable e) {
-                        if(!e.getMessage().contains("Query returned empty"))
-                            Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+                        if (!e.getMessage().contains("Query returned empty"))
+                            Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -245,14 +318,13 @@ public class CartFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.cart_menu,menu);
+        inflater.inflate(R.menu.cart_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if(item.getItemId() == R.id.action_clear_cart)
-        {
+        if (item.getItemId() == R.id.action_clear_cart) {
             cartDataSource.cleanCart(Common.currentUser.getUid())
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -270,7 +342,7 @@ public class CartFragment extends Fragment {
 
                         @Override
                         public void onError(Throwable e) {
-                            Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
             return true;
@@ -281,7 +353,7 @@ public class CartFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if(!EventBus.getDefault().isRegistered(this))
+        if (!EventBus.getDefault().isRegistered(this))
             EventBus.getDefault().register(this);
     }
 
@@ -289,9 +361,28 @@ public class CartFragment extends Fragment {
     public void onStop() {
         EventBus.getDefault().postSticky(new HideFABCart(false));
         cartViewModel.onStop();
-        if(EventBus.getDefault().isRegistered(this))
+        if (EventBus.getDefault().isRegistered(this))
             EventBus.getDefault().unregister(this);
+        if (fusedLocationProviderClient != null)
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         super.onStop();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (fusedLocationProviderClient != null)
+            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)

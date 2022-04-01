@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -28,6 +29,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 import com.senya.androideatitv2client.Common.Common;
 import com.senya.androideatitv2client.Model.UserModel;
 
@@ -79,20 +86,34 @@ public class MainActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         dialog = new AlertDialog.Builder(MainActivity.this).show();
 
-        listener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
+        listener = firebaseAuth -> {
 
-                if (user != null) {
-                    //Account is already logged in
-                    CheckUserFromFirebase(user);
-                    // Toast.makeText(MainActivity.this, "Already Logged In", Toast.LENGTH_SHORT).show();
-                } else
-                {
-                    phoneLogIn();
-                }
-            }
+            Dexter.withActivity(this)
+                    .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    .withListener(new PermissionListener() {
+                        @Override
+                        public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
+                            FirebaseUser user = firebaseAuth.getCurrentUser();
+                            if (user != null) {
+                                //Account is already logged in
+                                CheckUserFromFirebase(user);
+                                // Toast.makeText(MainActivity.this, "Already Logged In", Toast.LENGTH_SHORT).show();
+                            } else
+                            {
+                                phoneLogIn();
+                            }
+                        }
+
+                        @Override
+                        public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
+                            Toast.makeText(MainActivity.this, "Enable this permission to use app", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {
+
+                        }
+                    }).check();
         };
     }
 

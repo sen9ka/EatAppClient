@@ -41,4 +41,6 @@
     <string name="payment_method">Payment Method</string>
     <string name="cash_payment">Cash Payment</string>
     <string name="braintree">Braintree</string>
+    <string name="enter_your_address">Enter your address</string>
+    <string name="enter_your_comment">Enter your comment</string>
 </resources>
