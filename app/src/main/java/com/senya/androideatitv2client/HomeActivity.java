@@ -244,6 +244,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                             if(snapshot.exists())
                             {
                                 Common.categorySelected = snapshot.getValue(CategoryModel.class);
+                                Common.categorySelected.setMenu_id(snapshot.getKey());
 
                                 //Load food item
                                 FirebaseDatabase.getInstance()
@@ -261,6 +262,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                                                     for(DataSnapshot itemSnapShot: snapshot.getChildren())
                                                     {
                                                         Common.selectedFood = itemSnapShot.getValue(FoodModel.class);
+                                                        Common.selectedFood.setKey(itemSnapShot.getKey());
                                                     }
                                                     navController.navigate(R.id.nav_food_detail);
                                                 }
@@ -309,6 +311,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                             if(snapshot.exists())
                             {
                                 Common.categorySelected = snapshot.getValue(CategoryModel.class);
+                                Common.categorySelected.setMenu_id(snapshot.getKey());
 
                                 //Load food item
                                 FirebaseDatabase.getInstance()
@@ -326,6 +329,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                                                     for(DataSnapshot itemSnapShot: snapshot.getChildren())
                                                     {
                                                         Common.selectedFood = itemSnapShot.getValue(FoodModel.class);
+                                                        Common.selectedFood.setKey(itemSnapShot.getKey());
                                                     }
                                                     navController.navigate(R.id.nav_food_detail);
                                                 }
