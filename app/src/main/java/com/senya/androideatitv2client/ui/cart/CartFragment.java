@@ -12,6 +12,7 @@ import android.media.metrics.Event;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,8 +44,13 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.senya.androideatitv2client.Adapter.MyCartAdapter;
+import com.senya.androideatitv2client.Callback.ILoadTimeFromFirebaseListener;
 import com.senya.androideatitv2client.Common.Common;
 import com.senya.androideatitv2client.Common.MySwipeHelper;
 import com.senya.androideatitv2client.Database.CartDataSource;
@@ -62,6 +68,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -78,7 +86,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
 
-public class CartFragment extends Fragment {
+public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListener {
 
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -89,6 +97,10 @@ public class CartFragment extends Fragment {
     LocationCallback locationCallback;
     FusedLocationProviderClient fusedLocationProviderClient;
     Location currentLocation;
+
+    String address, comment;
+
+    ILoadTimeFromFirebaseListener listener;
 
     @BindView(R.id.recycler_cart)
     RecyclerView recycler_cart;
@@ -243,7 +255,7 @@ public class CartFragment extends Fragment {
                             order.setTransactionId("Cash On Delivery");
 
                             //Отправить заказ в БД
-                            writeOrderToFirebase(order);
+                            syncLocalTimeWithGlobalTime(order);
                         }
 
                         @Override
@@ -255,6 +267,27 @@ public class CartFragment extends Fragment {
         }, throwable -> {
             Toast.makeText(getContext(), ""+throwable.getMessage(), Toast.LENGTH_SHORT).show();
         }));
+    }
+
+    private void syncLocalTimeWithGlobalTime(Order order) {
+        final DatabaseReference offsetRef = FirebaseDatabase.getInstance().getReference(".info/serverTimeOffset");
+        offsetRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                long offset = snapshot.getValue(Long.class);
+                long estimatedServerTimeMs = System.currentTimeMillis()+offset; // offset это время между локальным временем и временем сервера
+                SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm");
+                Date resultDate = new Date(estimatedServerTimeMs);
+                Log.d("TEST_DATE",""+sdf.format(resultDate));
+
+                listener.onLoadTimeSuccess(order,estimatedServerTimeMs);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                listener.onLoadTimeFailed(error.getMessage());
+            }
+        });
     }
 
     private void writeOrderToFirebase(Order order) {
@@ -316,6 +349,9 @@ public class CartFragment extends Fragment {
         cartViewModel =
                 ViewModelProviders.of(this).get(CartViewModel.class);
         View root = inflater.inflate(R.layout.fragment_cart, container, false);
+
+        listener = this;
+
         cartViewModel.initCartDataSource(getContext());
         cartViewModel.getMutableLiveDataCartItems().observe(this, new Observer<List<CartItem>>() {
             @Override
@@ -572,5 +608,16 @@ public class CartFragment extends Fragment {
                     }
                 });
 
+    }
+
+    @Override
+    public void onLoadTimeSuccess(Order order, long estimateTimeInMs) {
+        order.setCreateDate(estimateTimeInMs);
+        writeOrderToFirebase(order);
+    }
+
+    @Override
+    public void onLoadTimeFailed(String message) {
+        Toast.makeText(getContext(), ""+message, Toast.LENGTH_SHORT).show();
     }
 }
