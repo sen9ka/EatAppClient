@@ -342,7 +342,7 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
                 });
                 chip_group_user_selected_addon.addView(chip);
             }
-        }else if(Common.selectedFood.getUserSelectedAddon().size() == 0)
+        }else if(Common.selectedFood.getUserSelectedSize() != null)
             chip_group_user_selected_addon.removeAllViews();
     }
 
