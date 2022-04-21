@@ -59,6 +59,7 @@ import com.senya.androideatitv2client.Database.CartItem;
 import com.senya.androideatitv2client.Database.LocalCartDataSource;
 import com.senya.androideatitv2client.EventBus.CounterCartEvent;
 import com.senya.androideatitv2client.EventBus.HideFABCart;
+import com.senya.androideatitv2client.EventBus.MenuItemBack;
 import com.senya.androideatitv2client.EventBus.UpdateItemInCart;
 import com.senya.androideatitv2client.Model.Order;
 import com.senya.androideatitv2client.R;
@@ -620,5 +621,11 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
     @Override
     public void onLoadTimeFailed(String message) {
         Toast.makeText(getContext(), ""+message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().postSticky(new MenuItemBack());
+        super.onDestroy();
     }
 }

@@ -47,6 +47,7 @@ import com.senya.androideatitv2client.Database.CartDatabase;
 import com.senya.androideatitv2client.Database.CartItem;
 import com.senya.androideatitv2client.Database.LocalCartDataSource;
 import com.senya.androideatitv2client.EventBus.CounterCartEvent;
+import com.senya.androideatitv2client.EventBus.MenuItemBack;
 import com.senya.androideatitv2client.Model.AddonModel;
 import com.senya.androideatitv2client.Model.CommentModel;
 import com.senya.androideatitv2client.Model.FoodModel;
@@ -514,5 +515,11 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
     public void onStop() {
         compositeDisposable.clear();
         super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().postSticky(new MenuItemBack());
+        super.onDestroy();
     }
 }

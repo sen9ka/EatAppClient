@@ -24,10 +24,12 @@ import com.senya.androideatitv2client.Adapter.MyCategoriesAdapter;
 import com.senya.androideatitv2client.Callback.ICategoryCallbackListener;
 import com.senya.androideatitv2client.Common.Common;
 import com.senya.androideatitv2client.Common.SpacesItemDecoration;
+import com.senya.androideatitv2client.EventBus.MenuItemBack;
 import com.senya.androideatitv2client.Model.CategoryModel;
 import com.senya.androideatitv2client.R;
 import com.senya.androideatitv2client.databinding.FragmentMenuBinding;
 
+import org.greenrobot.eventbus.EventBus;
 import org.w3c.dom.Text;
 
 import java.util.List;
@@ -90,5 +92,10 @@ public class MenuFragment extends Fragment {
         });
         recycler_menu.setLayoutManager(layoutManager);
         recycler_menu.addItemDecoration(new SpacesItemDecoration(8));
+    }
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().postSticky(new MenuItemBack());
+        super.onDestroy();
     }
 }

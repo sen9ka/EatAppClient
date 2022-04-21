@@ -18,8 +18,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.senya.androideatitv2client.Adapter.MyFoodListAdapter;
 import com.senya.androideatitv2client.Common.Common;
+import com.senya.androideatitv2client.EventBus.MenuItemBack;
 import com.senya.androideatitv2client.Model.FoodModel;
 import com.senya.androideatitv2client.R;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
@@ -66,6 +69,12 @@ public class FoodListFragment extends Fragment {
         recycler_food_list.setLayoutManager(new LinearLayoutManager(getContext()));
 
         layoutAnimationController = AnimationUtils.loadLayoutAnimation(getContext(),R.anim.layout_item_from_left);
+    }
+
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().postSticky(new MenuItemBack());
+        super.onDestroy();
     }
 }
 

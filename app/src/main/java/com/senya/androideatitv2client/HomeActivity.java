@@ -36,6 +36,7 @@ import com.senya.androideatitv2client.EventBus.CategoryClick;
 import com.senya.androideatitv2client.EventBus.CounterCartEvent;
 import com.senya.androideatitv2client.EventBus.FoodItemClick;
 import com.senya.androideatitv2client.EventBus.HideFABCart;
+import com.senya.androideatitv2client.EventBus.MenuItemBack;
 import com.senya.androideatitv2client.EventBus.PopularCategoryClick;
 import com.senya.androideatitv2client.Model.CategoryModel;
 import com.senya.androideatitv2client.Model.FoodModel;
@@ -61,6 +62,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private NavController navController;
     private CartDataSource cartDataSource;
     android.app.AlertDialog dialog;
+
+    int menuClickId=-1;
 
     @BindView(R.id.fab)
     CounterFab fab;
@@ -133,21 +136,26 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         drawer.closeDrawers();
         switch (item.getItemId()){
             case R.id.nav_home:
-                navController.navigate(R.id.nav_home);
+                if(item.getItemId() != menuClickId)
+                    navController.navigate(R.id.nav_home);
                 break;
             case R.id.nav_menu:
-                navController.navigate(R.id.nav_menu);
+                if(item.getItemId() != menuClickId)
+                    navController.navigate(R.id.nav_menu);
                 break;
             case R.id.nav_cart:
-                navController.navigate(R.id.nav_cart);
+                if(item.getItemId() != menuClickId)
+                    navController.navigate(R.id.nav_cart);
                 break;
             case R.id.nav_view_orders:
-                navController.navigate(R.id.nav_view_orders);
+                if(item.getItemId() != menuClickId)
+                    navController.navigate(R.id.nav_view_orders);
                 break;
             case R.id.nav_sign_out:
                 signOut();
                 break;
         }
+        menuClickId = item.getItemId();
         return true;
     }
 
@@ -392,5 +400,20 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                     }
                 });
     }
+
+    @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
+    public void countCartAgain(CounterCartEvent event)
+    {
+        if(event.isSuccess())
+            countCartItem();
+    }
+
+   @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+   public void onMenuItemBack(MenuItemBack event)
+   {
+       menuClickId = -1;
+       if(getSupportFragmentManager().getBackStackEntryCount() > 0)
+           getSupportFragmentManager().popBackStack();
+   }
 
 }
