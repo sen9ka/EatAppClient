@@ -43,4 +43,9 @@
     <string name="braintree">Braintree</string>
     <string name="enter_your_address">Enter your address</string>
     <string name="enter_your_comment">Enter your comment</string>
+    <string name="menu_view_orders">View Orders</string>
+    <string name="today_at_13_05_56_pm">Today at: 13:05:56 pm</string>
+    <string name="order_number">Order number:</string>
+    <string name="order_comment">Order comment:</string>
+    <string name="status_placed">Status: Placed</string>
 </resources>

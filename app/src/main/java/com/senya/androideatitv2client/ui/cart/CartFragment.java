@@ -613,6 +613,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
     @Override
     public void onLoadTimeSuccess(Order order, long estimateTimeInMs) {
         order.setCreateDate(estimateTimeInMs);
+        order.setOrderStatus(0);
         writeOrderToFirebase(order);
     }
 
