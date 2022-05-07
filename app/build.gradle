@@ -71,6 +71,12 @@ dependencies {
 
     implementation 'com.github.andremion:counterfab:1.2.2'
 
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
+
+
     implementation 'com.karumi:dexter:6.2.3'
     implementation 'com.google.android.gms:play-services-location:19.0.1'
 }
