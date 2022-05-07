@@ -2,13 +2,11 @@ package com.senya.androideatitv2client.ui.cart;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.media.metrics.Event;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Parcelable;
@@ -26,7 +24,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
@@ -41,9 +38,6 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -61,7 +55,7 @@ import com.senya.androideatitv2client.EventBus.CounterCartEvent;
 import com.senya.androideatitv2client.EventBus.HideFABCart;
 import com.senya.androideatitv2client.EventBus.MenuItemBack;
 import com.senya.androideatitv2client.EventBus.UpdateItemInCart;
-import com.senya.androideatitv2client.Model.Order;
+import com.senya.androideatitv2client.Model.OrderModel;
 import com.senya.androideatitv2client.R;
 
 import org.greenrobot.eventbus.EventBus;
@@ -83,7 +77,6 @@ import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
 
@@ -230,33 +223,33 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
                         @Override
                         public void onSuccess(Double totalPrice) {
                             double finalPrice = totalPrice;
-                            Order order = new Order();
-                            order.setUserId(Common.currentUser.getUid());
-                            order.setUserName(Common.currentUser.getName());
-                            order.setUserPhone(Common.currentUser.getPhone());
-                            order.setShippingAddress(address);
-                            order.setComment(comment);
+                            OrderModel orderModel = new OrderModel();
+                            orderModel.setUserId(Common.currentUser.getUid());
+                            orderModel.setUserName(Common.currentUser.getName());
+                            orderModel.setUserPhone(Common.currentUser.getPhone());
+                            orderModel.setShippingAddress(address);
+                            orderModel.setComment(comment);
 
                             if(currentLocation != null)
                             {
-                                order.setLat(currentLocation.getLatitude());
-                                order.setLng(currentLocation.getLongitude());
+                                orderModel.setLat(currentLocation.getLatitude());
+                                orderModel.setLng(currentLocation.getLongitude());
                             }
                             else
                             {
-                                order.setLat(-0.1f);
-                                order.setLng(-0.1f);
+                                orderModel.setLat(-0.1f);
+                                orderModel.setLng(-0.1f);
                             }
 
-                            order.setCartItemList(cartItems);
-                            order.setTotalPayment(totalPrice);
-                            order.setDiscount(0); //pozhe
-                            order.setFinalPayment(finalPrice);
-                            order.setCod(true);
-                            order.setTransactionId("Cash On Delivery");
+                            orderModel.setCartItemList(cartItems);
+                            orderModel.setTotalPayment(totalPrice);
+                            orderModel.setDiscount(0); //pozhe
+                            orderModel.setFinalPayment(finalPrice);
+                            orderModel.setCod(true);
+                            orderModel.setTransactionId("Cash On Delivery");
 
                             //Отправить заказ в БД
-                            syncLocalTimeWithGlobalTime(order);
+                            syncLocalTimeWithGlobalTime(orderModel);
                         }
 
                         @Override
@@ -270,7 +263,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
         }));
     }
 
-    private void syncLocalTimeWithGlobalTime(Order order) {
+    private void syncLocalTimeWithGlobalTime(OrderModel orderModel) {
         final DatabaseReference offsetRef = FirebaseDatabase.getInstance().getReference(".info/serverTimeOffset");
         offsetRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -281,7 +274,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
                 Date resultDate = new Date(estimatedServerTimeMs);
                 Log.d("TEST_DATE",""+sdf.format(resultDate));
 
-                listener.onLoadTimeSuccess(order,estimatedServerTimeMs);
+                listener.onLoadTimeSuccess(orderModel,estimatedServerTimeMs);
             }
 
             @Override
@@ -291,11 +284,11 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
         });
     }
 
-    private void writeOrderToFirebase(Order order) {
+    private void writeOrderToFirebase(OrderModel orderModel) {
         FirebaseDatabase.getInstance()
                 .getReference(Common.ORDER_REF)
                 .child(Common.createOrderNumber()) //создадим номер заказа только из цифр
-                .setValue(order)
+                .setValue(orderModel)
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_SHORT).show();
                 }).addOnCompleteListener(task -> {
@@ -310,7 +303,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
                                 @Override
                                 public void onSuccess(Integer integer) {
-                                    Toast.makeText(getContext(), "Order placed successfully!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "OrderModel placed successfully!", Toast.LENGTH_SHORT).show();
                                 }
 
                                 @Override
@@ -612,10 +605,10 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
     }
 
     @Override
-    public void onLoadTimeSuccess(Order order, long estimateTimeInMs) {
-        order.setCreateDate(estimateTimeInMs);
-        order.setOrderStatus(0);
-        writeOrderToFirebase(order);
+    public void onLoadTimeSuccess(OrderModel orderModel, long estimateTimeInMs) {
+        orderModel.setCreateDate(estimateTimeInMs);
+        orderModel.setOrderStatus(0);
+        writeOrderToFirebase(orderModel);
     }
 
     @Override

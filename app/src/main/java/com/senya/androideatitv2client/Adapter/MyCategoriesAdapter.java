@@ -19,6 +19,7 @@ import com.senya.androideatitv2client.R;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.Collection;
 import java.util.List;
 
 import butterknife.BindView;
@@ -58,6 +59,10 @@ public class MyCategoriesAdapter extends RecyclerView.Adapter<MyCategoriesAdapte
     @Override
     public int getItemCount() {
         return categoryModelList.size();
+    }
+
+    public List<CategoryModel> getListCategory() {
+        return categoryModelList;
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

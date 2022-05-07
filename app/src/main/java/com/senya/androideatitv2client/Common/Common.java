@@ -75,7 +75,7 @@ public class Common {
         {
             //calculating if addon != null
             for(AddonModel addonModel : userSelectedAddon)
-            result += addonModel.getPrice();
+                result += addonModel.getPrice();
             return result;
         }
         else if(userSelectedAddon == null)

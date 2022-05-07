@@ -1,8 +1,8 @@
 package com.senya.androideatitv2client.Callback;
 
-import com.senya.androideatitv2client.Model.Order;
+import com.senya.androideatitv2client.Model.OrderModel;
 
 public interface ILoadTimeFromFirebaseListener {
-    void onLoadTimeSuccess(Order order, long estimateTimeInMs);
+    void onLoadTimeSuccess(OrderModel orderModel, long estimateTimeInMs);
     void onLoadTimeFailed(String message);
 }
