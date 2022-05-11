@@ -3,18 +3,30 @@ package com.senya.androideatitv2client;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.andremion.counterfab.CounterFab;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -40,12 +52,18 @@ import com.senya.androideatitv2client.EventBus.MenuItemBack;
 import com.senya.androideatitv2client.EventBus.PopularCategoryClick;
 import com.senya.androideatitv2client.Model.CategoryModel;
 import com.senya.androideatitv2client.Model.FoodModel;
+import com.senya.androideatitv2client.Model.UserModel;
 import com.senya.androideatitv2client.databinding.ActivityHomeBinding;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.w3c.dom.Text;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -55,6 +73,14 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    private Place placeSelected;
+    private AutocompleteSupportFragment places_fragment;
+    private PlacesClient placesClient;
+    private List<Place.Field> placeFields = Arrays.asList(Place.Field.ID,
+            Place.Field.NAME,
+            Place.Field.ADDRESS,
+            Place.Field.LAT_LNG);
 
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityHomeBinding binding;
@@ -80,6 +106,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        initPlaceClient();
 
         dialog = new android.app.AlertDialog.Builder(this).setCancelable(false).create();
 
@@ -114,6 +142,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         Common.setSpanString("Hello, ", Common.currentUser.getName(),txt_user);
 
         countCartItem();
+    }
+
+    private void initPlaceClient() {
+        Places.initialize(this,getString(R.string.google_maps_key));
+        placesClient = Places.createClient(this);
     }
 
     @Override
@@ -154,9 +187,98 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_sign_out:
                 signOut();
                 break;
+            case R.id.nav_update_info:
+                showUpdateInfoDialog();
+                break;
         }
         menuClickId = item.getItemId();
         return true;
+    }
+
+    private void showUpdateInfoDialog() {
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setTitle("Update Info");
+        builder.setMessage("Please Fill Information");
+
+        View itemView= LayoutInflater.from(this).inflate(R.layout.layout_register, null);
+
+        EditText edt_name= (EditText)itemView.findViewById(R.id.edt_name);
+        TextView txt_address_detail = (TextView) itemView.findViewById(R.id.txt_address_detail);
+        EditText edt_phone= (EditText)itemView.findViewById(R.id.edt_phone);
+
+        places_fragment = (AutocompleteSupportFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.places_autocomplete_fragment);
+        places_fragment.setPlaceFields(placeFields);
+        places_fragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+                placeSelected = place;
+                txt_address_detail.setText(place.getAddress());
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+                Toast.makeText(HomeActivity.this, ""+status.getStatusMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+
+        //set data
+        edt_name.setText(Common.currentUser.getName());
+        txt_address_detail.setText(Common.currentUser.getAddress());
+        edt_phone.setText(Common.currentUser.getPhone());
+
+        builder.setNegativeButton("CANCEL", (dialogInterface, which) -> dialogInterface.dismiss());
+
+        builder.setPositiveButton("UPDATE", (dialogInterface, which) -> {
+            if(placeSelected != null)
+            {
+                if(TextUtils.isEmpty(edt_name.getText().toString()))
+                {
+                    Toast.makeText(HomeActivity.this, "Please enter Name", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Map<String,Object> update_data = new HashMap<>();
+                update_data.put("name",edt_name.getText().toString());
+                update_data.put("address",txt_address_detail.getText().toString());
+                update_data.put("lat",placeSelected.getLatLng().latitude);
+                update_data.put("lng",placeSelected.getLatLng().longitude);
+
+                FirebaseDatabase.getInstance()
+                        .getReference(Common.USER_REFERENCES)
+                        .child(Common.currentUser.getUid())
+                        .updateChildren(update_data)
+                        .addOnFailureListener(e -> {
+                            dialogInterface.dismiss();
+                            Toast.makeText(HomeActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+                        })
+                        .addOnSuccessListener(aVoid -> {
+                            dialogInterface.dismiss();
+                            Toast.makeText(HomeActivity.this, "Information successfully updated", Toast.LENGTH_SHORT).show();
+                            Common.currentUser.setName(update_data.get("name").toString());
+                            Common.currentUser.setAddress(update_data.get("address").toString());
+                            Common.currentUser.setLat(Double.parseDouble(update_data.get("lat").toString()));
+                            Common.currentUser.setLng(Double.parseDouble(update_data.get("lng").toString()));
+                        });
+            }
+            else
+            {
+                Toast.makeText(this, "Please select address", Toast.LENGTH_SHORT).show();
+            }
+
+        });
+
+        builder.setView(itemView);
+
+        androidx.appcompat.app.AlertDialog dialog = builder.create();
+        dialog.setOnDismissListener(dialogInterface -> {
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.remove(places_fragment);
+            fragmentTransaction.commit();
+        });
+        dialog.show();
     }
 
     private void signOut() {
@@ -227,7 +349,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         if(event.isSuccess())
         {
             navController.navigate(R.id.nav_food_detail);
-
         }
     }
 

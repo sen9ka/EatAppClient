@@ -33,11 +33,17 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -55,6 +61,7 @@ import com.senya.androideatitv2client.EventBus.CounterCartEvent;
 import com.senya.androideatitv2client.EventBus.HideFABCart;
 import com.senya.androideatitv2client.EventBus.MenuItemBack;
 import com.senya.androideatitv2client.EventBus.UpdateItemInCart;
+import com.senya.androideatitv2client.HomeActivity;
 import com.senya.androideatitv2client.Model.FCMResponse;
 import com.senya.androideatitv2client.Model.FCMSendData;
 import com.senya.androideatitv2client.Model.OrderModel;
@@ -68,6 +75,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -89,6 +97,14 @@ import io.reactivex.schedulers.Schedulers;
 import retrofit2.Retrofit;
 
 public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListener {
+
+    private Place placeSelected;
+    private AutocompleteSupportFragment places_fragment;
+    private PlacesClient placesClient;
+    private List<Place.Field> placeFields = Arrays.asList(Place.Field.ID,
+            Place.Field.NAME,
+            Place.Field.ADDRESS,
+            Place.Field.LAT_LNG);
 
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -123,7 +139,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
         View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_place_order, null);
 
-        EditText edt_address = (EditText) view.findViewById(R.id.edt_address);
+
         EditText edt_comment = (EditText) view.findViewById(R.id.edt_comment);
         TextView txt_address = (TextView) view.findViewById(R.id.txt_address_detail);
         RadioButton rdi_home = (RadioButton) view.findViewById(R.id.rdi_home_address);
@@ -132,27 +148,36 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
         RadioButton rdi_cod = (RadioButton) view.findViewById(R.id.rdi_cod);
         RadioButton rdi_braintree = (RadioButton) view.findViewById(R.id.rdi_braintree);
 
-        //Data
-        edt_address.setText(Common.currentUser.getAddress()); //User`s home address by default
-
-        //Event
-        rdi_home.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        places_fragment = (AutocompleteSupportFragment)getActivity().getSupportFragmentManager()
+                .findFragmentById(R.id.places_autocomplete_fragment);
+        places_fragment.setPlaceFields(placeFields);
+        places_fragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    edt_address.setText(Common.currentUser.getAddress());
-                    txt_address.setVisibility(View.GONE);
-                }
+            public void onPlaceSelected(@NonNull Place place) {
+                placeSelected = place;
+                txt_address.setText(place.getAddress());
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+                Toast.makeText(getContext(), ""+status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-        rdi_other_address.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    edt_address.setText("");
-                    edt_address.setHint("Enter your address");
-                    txt_address.setVisibility(View.GONE);
-                }
+
+        //Data
+        txt_address.setText(Common.currentUser.getAddress()); //User`s home address by default
+
+        //Event
+        rdi_home.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                txt_address.setText(Common.currentUser.getAddress());
+                txt_address.setVisibility(View.VISIBLE);
+                places_fragment.setHint(Common.currentUser.getAddress());
+            }
+        });
+        rdi_other_address.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                txt_address.setVisibility(View.VISIBLE);
             }
         });
         rdi_ship_to_this.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -184,14 +209,13 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
                             Disposable disposable = singleAddress.subscribeWith(new DisposableSingleObserver<String>() {
                                 @Override
                                 public void onSuccess(String s) {
-                                    edt_address.setText(coordinates);
                                     txt_address.setText(s);
                                     txt_address.setVisibility(View.VISIBLE);
+                                    places_fragment.setHint(s);
                                 }
 
                                 @Override
                                 public void onError(Throwable e) {
-                                    edt_address.setText(coordinates);
                                     txt_address.setText(e.getMessage());
                                     txt_address.setVisibility(View.VISIBLE);
                                 }
@@ -207,7 +231,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
         }).setPositiveButton("YES", (dialog, which) -> {
             //Toast.makeText(getContext(), "Implement later", Toast.LENGTH_SHORT).show();
             if(rdi_cod.isChecked())
-                paymentCOD(edt_address.getText().toString(),edt_comment.getText().toString());
+                paymentCOD(txt_address.getText().toString(),edt_comment.getText().toString());
         });
 
         AlertDialog dialog = builder.create();
@@ -436,6 +460,8 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
     private void initViews() {
 
+        initPlaceClient();
+
         setHasOptionsMenu(true);
         cartDataSource = new LocalCartDataSource(CartDatabase.getInstance(getContext()).cartDAO());
 
@@ -479,6 +505,11 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
         };
 
         sumAllItemInCart();
+    }
+
+    private void initPlaceClient() {
+        Places.initialize(getContext(),getString(R.string.google_maps_key));
+        placesClient = Places.createClient(getContext());
     }
 
     private void sumAllItemInCart() {

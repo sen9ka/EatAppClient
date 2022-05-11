@@ -3,6 +3,7 @@ package com.senya.androideatitv2client;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
 import android.accounts.Account;
@@ -14,13 +15,20 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.firebase.FirebaseAppLifecycleListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
@@ -57,7 +65,15 @@ public class MainActivity extends AppCompatActivity {
     private final CompositeDisposable disposable = new CompositeDisposable();
 
     private DatabaseReference userRef;
-    private List<AuthUI.IdpConfig>providers;
+    private List<AuthUI.IdpConfig> providers;
+
+    private Place placeSelected;
+    private AutocompleteSupportFragment places_fragment;
+    private PlacesClient placesClient;
+    private List<Place.Field> placeFields = Arrays.asList(Place.Field.ID,
+            Place.Field.NAME,
+            Place.Field.ADDRESS,
+            Place.Field.LAT_LNG);
 
     @Override
     protected void onStart() {
@@ -82,8 +98,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void Init() {
-        providers=Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
 
+        Places.initialize(this,getString(R.string.google_maps_key));
+        placesClient = Places.createClient(this);
+
+        providers=Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
 
         userRef= FirebaseDatabase.getInstance().getReference(Common.USER_REFERENCES);
         firebaseAuth = FirebaseAuth.getInstance();
@@ -150,9 +169,28 @@ public class MainActivity extends AppCompatActivity {
         builder.setMessage("Please Fill Information");
 
         View itemView= LayoutInflater.from(this).inflate(R.layout.layout_register, null);
+
         EditText edt_name= (EditText)itemView.findViewById(R.id.edt_name);
-        EditText edt_address= (EditText)itemView.findViewById(R.id.edt_address);
+        TextView txt_address_detail = (TextView) itemView.findViewById(R.id.txt_address_detail);
         EditText edt_phone= (EditText)itemView.findViewById(R.id.edt_phone);
+
+        places_fragment = (AutocompleteSupportFragment)getSupportFragmentManager()
+        .findFragmentById(R.id.places_autocomplete_fragment);
+        places_fragment.setPlaceFields(placeFields);
+        places_fragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+                placeSelected = place;
+                txt_address_detail.setText(place.getAddress());
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+                Toast.makeText(MainActivity.this, ""+status.getStatusMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
 
         //set data
         edt_phone.setText(user.getPhoneNumber());
@@ -162,42 +200,48 @@ public class MainActivity extends AppCompatActivity {
 
         builder.setPositiveButton("REGISTER", (dialogInterface, which) -> {
 
-            if(TextUtils.isEmpty(edt_name.getText().toString()))
-            {
-                Toast.makeText(this, "Please enter Name", Toast.LENGTH_SHORT).show();
-                return;
+            if(placeSelected != null) {
+                if (TextUtils.isEmpty(edt_name.getText().toString())) {
+                    Toast.makeText(this, "Please enter Name", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                UserModel userModel = new UserModel();
+                userModel.setUid(user.getUid());
+                userModel.setName(edt_name.getText().toString());
+                userModel.setAddress(txt_address_detail.getText().toString());
+                userModel.setPhone(edt_phone.getText().toString());
+                userModel.setLat(placeSelected.getLatLng().latitude);
+                userModel.setLng(placeSelected.getLatLng().longitude);
+
+                userRef.child(user.getUid()).
+                        setValue(userModel)
+                        .addOnCompleteListener(task -> {
+
+                            if (task.isSuccessful()) {
+                                dialogInterface.dismiss();
+
+                                Toast.makeText(MainActivity.this, "Successfully Registered", Toast.LENGTH_SHORT).show();
+                                goToHomeActivity(userModel);
+                            }
+
+                        });
             }
-            else  if(TextUtils.isEmpty(edt_address.getText().toString()))
+            else
             {
-                Toast.makeText(this, "Please enter Address", Toast.LENGTH_SHORT).show();
-                return;
+                Toast.makeText(this, "Please select address", Toast.LENGTH_SHORT).show();
             }
-
-            UserModel userModel= new UserModel();
-            userModel.setUid(user.getUid());
-            userModel.setName(edt_name.getText().toString());
-            userModel.setAddress(edt_address.getText().toString());
-            userModel.setPhone(edt_phone.getText().toString());
-
-            userRef.child(user.getUid()).
-                    setValue(userModel)
-                    .addOnCompleteListener(task -> {
-
-                        if(task.isSuccessful())
-                        {
-                            dialogInterface.dismiss();
-
-                            Toast.makeText(MainActivity.this, "Successfully Registered", Toast.LENGTH_SHORT).show();
-                            goToHomeActivity(userModel);
-                        }
-
-                    });
 
         });
 
         builder.setView(itemView);
 
         androidx.appcompat.app.AlertDialog dialog = builder.create();
+        dialog.setOnDismissListener(dialogInterface -> {
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.remove(places_fragment);
+            fragmentTransaction.commit();
+        });
         dialog.show();
     }
 
