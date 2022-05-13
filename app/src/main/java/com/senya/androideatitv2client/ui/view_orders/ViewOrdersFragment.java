@@ -1,6 +1,8 @@
 package com.senya.androideatitv2client.ui.view_orders;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,8 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -21,15 +25,26 @@ import com.google.firebase.database.ValueEventListener;
 import com.senya.androideatitv2client.Adapter.MyOrdersAdapter;
 import com.senya.androideatitv2client.Callback.ILoadOrderCallbackListener;
 import com.senya.androideatitv2client.Common.Common;
+import com.senya.androideatitv2client.Common.MySwipeHelper;
+import com.senya.androideatitv2client.Database.CartItem;
+import com.senya.androideatitv2client.EventBus.CounterCartEvent;
 import com.senya.androideatitv2client.Model.OrderModel;
 import com.senya.androideatitv2client.R;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackListener {
 
@@ -97,6 +112,48 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         recycler_orders.setLayoutManager(layoutManager);
         recycler_orders.addItemDecoration(new DividerItemDecoration(getContext(),layoutManager.getOrientation()));
+
+        MySwipeHelper mySwipeHelper = new MySwipeHelper(getContext(), recycler_orders, 250) {
+            @Override
+            public void instantiateMyButton(RecyclerView.ViewHolder viewHolder, List<MyButton> buf) {
+                buf.add(new MyButton(getContext(), "Cancel Order", 30, 0, Color.parseColor("#FF3C30"),
+                        pos -> {
+                            OrderModel orderModel = ((MyOrdersAdapter)recycler_orders.getAdapter()).getItemAtPosition(pos);
+                            if(orderModel.getOrderStatus() == 0)
+                            {
+                                androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(getContext());
+                                builder.setTitle("Cancel Order")
+                                        .setMessage("Do you really want to cancel this order?")
+                                        .setNegativeButton("NO", (dialogInterface, i) -> dialogInterface.dismiss())
+                                        .setPositiveButton("YES", (dialogInterface, i) -> {
+
+                                            Map<String,Object> update_data = new HashMap<>();
+                                            update_data.put("orderStatus", -1);
+                                            FirebaseDatabase.getInstance()
+                                                    .getReference(Common.ORDER_REF)
+                                                    .child(orderModel.getOrderNumber())
+                                                    .updateChildren(update_data)
+                                                    .addOnFailureListener(e -> Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_SHORT).show())
+                                                    .addOnSuccessListener(unused -> {
+                                                        orderModel.setOrderStatus(-1);
+                                                        ((MyOrdersAdapter)recycler_orders.getAdapter()).setItemAtPosition(pos,orderModel);
+                                                        recycler_orders.getAdapter().notifyItemChanged(pos);
+                                                        Toast.makeText(getContext(), "Order successfully cancelled", Toast.LENGTH_SHORT).show();
+                                                    });
+                                        });
+                                androidx.appcompat.app.AlertDialog dialog = builder.create();
+                                dialog.show();
+                            }
+                            else
+                            {
+                                Toast.makeText(getContext(), new StringBuilder("Your order has been changed to ")
+                                        .append(Common.convertStatusToText(orderModel.getOrderStatus()))
+                                        .append(", so you can`t cancel it"), Toast.LENGTH_SHORT).show();
+                            }
+                        }));
+            }
+        };
+
     }
 
     @Override

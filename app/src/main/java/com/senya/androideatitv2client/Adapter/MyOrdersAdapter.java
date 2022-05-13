@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Index;
 
 import com.bumptech.glide.Glide;
 import com.senya.androideatitv2client.Common.Common;
@@ -36,6 +37,16 @@ public class MyOrdersAdapter extends RecyclerView.Adapter<MyOrdersAdapter.MyView
         this.orderModelList = orderModelList;
         calendar = Calendar.getInstance();
         simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    }
+
+    public OrderModel getItemAtPosition(int pos)
+    {
+        return orderModelList.get(pos);
+    }
+
+    public void setItemAtPosition(int pos, OrderModel item)
+    {
+        orderModelList.set(pos,item);
     }
 
     @NonNull
