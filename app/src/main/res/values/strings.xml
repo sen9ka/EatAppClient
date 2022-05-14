@@ -51,4 +51,10 @@
     <string name="action_search">Search</string>
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyCYarmPeji0ELB-xZBBDBzYh0ppArY0M9o</string>
     <string name="update_info">Update Info</string>
+    <string name="ok">Ok</string>
+    <string name="order_details">Order Details</string>
+    <string name="size_medium">Size: Medium</string>
+    <string name="addon_default">Addon: Default</string>
+    <string name="quantity_1">Quantity: 1</string>
+    <string name="thai_salad_style">THAI SALAD STYLE</string>
 </resources>
