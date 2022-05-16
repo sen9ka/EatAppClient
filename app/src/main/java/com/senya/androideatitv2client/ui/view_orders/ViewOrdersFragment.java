@@ -2,6 +2,7 @@ package com.senya.androideatitv2client.ui.view_orders;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -29,7 +30,9 @@ import com.senya.androideatitv2client.Common.MySwipeHelper;
 import com.senya.androideatitv2client.Database.CartItem;
 import com.senya.androideatitv2client.EventBus.CounterCartEvent;
 import com.senya.androideatitv2client.Model.OrderModel;
+import com.senya.androideatitv2client.Model.ShippingOrderModel;
 import com.senya.androideatitv2client.R;
+import com.senya.androideatitv2client.TrackingOrderActivity;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -150,6 +153,45 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
                                         .append(Common.convertStatusToText(orderModel.getOrderStatus()))
                                         .append(", so you can`t cancel it"), Toast.LENGTH_SHORT).show();
                             }
+                        }));
+
+                buf.add(new MyButton(getContext(), "Track Order", 30, 0, Color.parseColor("#001970"),
+                        pos -> {
+                            OrderModel orderModel = ((MyOrdersAdapter)recycler_orders.getAdapter()).getItemAtPosition(pos);
+
+                            FirebaseDatabase.getInstance()
+                                    .getReference(Common.SHIPPING_ORDER_REF)
+                                    .child(orderModel.getOrderNumber())
+                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                            if(snapshot.exists())
+                                            {
+                                                Common.currentShippingOrder = snapshot.getValue(ShippingOrderModel.class);
+                                                if(Common.currentShippingOrder.getCurrentLat() != -1 &&
+                                                Common.currentShippingOrder.getCurrentLng() != -1)
+                                                {
+
+                                                    startActivity(new Intent(getContext(), TrackingOrderActivity.class));
+
+                                                }
+                                                else
+                                                {
+                                                    Toast.makeText(getContext(), "Shipper has not started your delivery yet", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                            else 
+                                            {
+                                                Toast.makeText(getContext(), "Wait, handing over to the shipper", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                                            Toast.makeText(getContext(), ""+databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+
                         }));
             }
         };
