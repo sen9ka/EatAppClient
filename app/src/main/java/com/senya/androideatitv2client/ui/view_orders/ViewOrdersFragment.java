@@ -27,7 +27,10 @@ import com.senya.androideatitv2client.Adapter.MyOrdersAdapter;
 import com.senya.androideatitv2client.Callback.ILoadOrderCallbackListener;
 import com.senya.androideatitv2client.Common.Common;
 import com.senya.androideatitv2client.Common.MySwipeHelper;
+import com.senya.androideatitv2client.Database.CartDataSource;
+import com.senya.androideatitv2client.Database.CartDatabase;
 import com.senya.androideatitv2client.Database.CartItem;
+import com.senya.androideatitv2client.Database.LocalCartDataSource;
 import com.senya.androideatitv2client.EventBus.CounterCartEvent;
 import com.senya.androideatitv2client.Model.OrderModel;
 import com.senya.androideatitv2client.Model.ShippingOrderModel;
@@ -46,10 +49,14 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackListener {
+
+    CartDataSource cartDataSource;
+    CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @BindView(R.id.recycler_orders)
     RecyclerView recycler_orders;
@@ -106,6 +113,8 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
     }
 
     private void initViews(View root) {
+        cartDataSource = new LocalCartDataSource(CartDatabase.getInstance(getContext()).cartDAO());
+
         listener = this;
 
         dialog = new AlertDialog.Builder(getContext()).setCancelable(false).create();
@@ -194,6 +203,51 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
                                     });
 
                         }));
+
+                buf.add(new MyButton(getContext(), "Repeat Order", 30, 0, Color.parseColor("#5d4037"),
+                        pos -> {
+
+                            OrderModel orderModel = ((MyOrdersAdapter)recycler_orders.getAdapter()).getItemAtPosition(pos);
+
+                            dialog.show();
+                            cartDataSource.cleanCart(Common.currentUser.getUid())
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(new SingleObserver<Integer>() {
+                                        @Override
+                                        public void onSubscribe(Disposable d) {
+
+                                        }
+
+                                        @Override
+                                        public void onSuccess(Integer integer) {
+
+                                            CartItem[] cartItems = orderModel
+                                                    .getCartItemList().toArray(new CartItem[orderModel.getCartItemList().size()]);
+
+                                            compositeDisposable.add(cartDataSource.insertOrReplaceAll(cartItems)
+                                            .subscribeOn(Schedulers.io())
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe(() -> {
+                                                        dialog.dismiss();
+                                                        Toast.makeText(getContext(), "Added to cart successfully", Toast.LENGTH_SHORT).show();
+                                                        EventBus.getDefault().postSticky(new CounterCartEvent(true));
+
+                                                    },throwable -> {
+                                                        dialog.dismiss();
+                                                        Toast.makeText(getContext(), ""+throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                                                    })
+                                            );
+                                        }
+
+                                        @Override
+                                        public void onError(Throwable e) {
+                                            dialog.dismiss();
+                                            Toast.makeText(getContext(), "[Error]"+e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+
+                        }));
             }
         };
 
@@ -209,5 +263,11 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
     public void onLoadOrderFailed(String message) {
         dialog.dismiss();
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onStop() {
+        compositeDisposable.clear();
+        super.onStop();
     }
 }
