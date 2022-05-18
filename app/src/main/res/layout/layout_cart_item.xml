@@ -12,6 +12,7 @@
         android:layout_height="wrap_content">
 
         <ImageView
+            android:layout_gravity="center_vertical"
             android:id="@+id/img_cart"
             android:layout_width="100dp"
             android:scaleType="fitXY"
@@ -30,6 +31,28 @@
                 <TextView
                     android:id="@+id/txt_food_name"
                     android:text="@string/cart"
+                    android:fontFamily="@font/brandon_medium"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/txt_food_size"
+                    android:text="@string/size"
+                    android:fontFamily="@font/brandon_medium"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/txt_food_addon"
+                    android:text="@string/add_on"
                     android:fontFamily="@font/brandon_medium"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

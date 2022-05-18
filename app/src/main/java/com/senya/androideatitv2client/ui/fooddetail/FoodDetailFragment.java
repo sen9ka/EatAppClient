@@ -128,6 +128,7 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
         cartItem.setUid(Common.currentUser.getUid());
         cartItem.setUserPhone(Common.currentUser.getPhone());
 
+        cartItem.setCategoryId(Common.categorySelected.getMenu_id());
         cartItem.setFoodId(Common.selectedFood.getId());
         cartItem.setFoodName(Common.selectedFood.getName());
         cartItem.setFoodImage(Common.selectedFood.getImage());
@@ -144,6 +145,7 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
             cartItem.setFoodSize("Default");
 
         cartDataSource.getItemWithAllOptionsInCart(Common.currentUser.getUid(),
+                Common.categorySelected.getMenu_id(),
                 cartItem.getFoodId(),
                 cartItem.getFoodSize(),
                 cartItem.getFoodAddon())
