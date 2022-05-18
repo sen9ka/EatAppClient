@@ -58,4 +58,5 @@
     <string name="thai_salad_style">THAI SALAD STYLE</string>
     <string name="title_activity_tracking_order">TrackingOrderActivity</string>
     <string name="google_maps_key">AIzaSyAZ3DCYdVbTMSaFM735f3YSUnxr8Cm15_k</string>
+    <string name="cancel">Cancel</string>
 </resources>

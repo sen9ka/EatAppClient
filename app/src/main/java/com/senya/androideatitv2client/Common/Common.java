@@ -254,4 +254,17 @@ public class Common {
         }
         return result.substring(0,result.length()-1);
     }
+
+    public static FoodModel findFoodInListById(CategoryModel categoryModel, String foodId) {
+        if(categoryModel.getFoods() != null && categoryModel.getFoods().size() > 0)
+        {
+            for(FoodModel foodModel:categoryModel.getFoods())
+                if(foodModel.getId().equals(foodId))
+                    return foodModel;
+
+                return null;
+        }
+        else
+            return null;
+    }
 }
