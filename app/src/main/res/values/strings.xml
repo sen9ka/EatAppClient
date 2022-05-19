@@ -59,4 +59,7 @@
     <string name="title_activity_tracking_order">TrackingOrderActivity</string>
     <string name="google_maps_key">AIzaSyAZ3DCYdVbTMSaFM735f3YSUnxr8Cm15_k</string>
     <string name="cancel">Cancel</string>
+    <string name="shipper_name">Shipper Name</string>
+    <string name="shipper_info">Shipper Info</string>
+    <string name="call_shipper">Call Shipper</string>
 </resources>
