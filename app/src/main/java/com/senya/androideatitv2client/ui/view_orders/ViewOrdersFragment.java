@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -72,14 +73,14 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         viewOrdersViewModel =
-                ViewModelProviders.of(this).get(ViewOrdersViewModel.class);
+                new ViewModelProvider(this).get(ViewOrdersViewModel.class);
         View root = inflater.inflate(R.layout.fragment_view_order,container,false);
         unbinder = ButterKnife.bind(this,root);
 
         initViews(root);
         loadOrdersFromFirebase();
 
-        viewOrdersViewModel.getMutableLiveDataOrderList().observe(this,orderList -> {
+        viewOrdersViewModel.getMutableLiveDataOrderList().observe(getViewLifecycleOwner(),orderList -> {
             MyOrdersAdapter adapter = new MyOrdersAdapter(getContext(),orderList);
             recycler_orders.setAdapter(adapter);
         });

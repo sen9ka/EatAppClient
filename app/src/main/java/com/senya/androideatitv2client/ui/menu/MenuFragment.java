@@ -61,7 +61,7 @@ public class MenuFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        menuViewModel = ViewModelProviders.of(this).get(MenuViewModel.class);
+        menuViewModel = new ViewModelProvider(this).get(MenuViewModel.class);
         View root = inflater.inflate(R.layout.fragment_menu, container, false);
 
 
