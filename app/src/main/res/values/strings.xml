@@ -62,4 +62,6 @@
     <string name="shipper_name">Shipper Name</string>
     <string name="shipper_info">Shipper Info</string>
     <string name="call_shipper">Call Shipper</string>
+    <string name="menu_subscribe_news">News</string>
+    <string name="subscribe_to_news">Subscribe to News</string>
 </resources>
