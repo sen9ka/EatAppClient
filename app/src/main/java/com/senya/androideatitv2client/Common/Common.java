@@ -266,7 +266,6 @@ public class Common {
             for(FoodModel foodModel:categoryModel.getFoods())
                 if(foodModel.getId().equals(foodId))
                     return foodModel;
-
                 return null;
         }
         else
