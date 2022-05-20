@@ -102,7 +102,8 @@ public class MainActivity extends AppCompatActivity {
         Places.initialize(this,getString(R.string.google_maps_key));
         placesClient = Places.createClient(this);
 
-        providers=Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
+        providers=Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build(),
+                new AuthUI.IdpConfig.EmailBuilder().build());
 
         userRef= FirebaseDatabase.getInstance().getReference(Common.USER_REFERENCES);
         firebaseAuth = FirebaseAuth.getInstance();
@@ -230,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
             else
             {
                 Toast.makeText(this, "Please select address", Toast.LENGTH_SHORT).show();
+                return;
             }
 
         });
@@ -249,6 +251,8 @@ public class MainActivity extends AppCompatActivity {
 
         startActivityForResult(AuthUI.getInstance()
                 .createSignInIntentBuilder()
+                .setLogo(R.drawable.logo)
+                .setTheme(R.style.LoginTheme)
                 .setAvailableProviders(providers)
                 .build(),APP_REQUEST_CODE);
 
