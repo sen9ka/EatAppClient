@@ -58,6 +58,7 @@ public class Common {
     public static final String NEWS_TOPIC = "news";
     public static final String IS_SEND_IMAGE = "IS_SEND_IMAGE";
     public static final String IMAGE_URL = "IMAGE_URL";
+    public static final String RESTAURANT_REF = "Restaurant";
     private static final String TOKEN_REF = "Tokens";
     public static final String SHIPPING_ORDER_REF = "ShippingOrder";
     public static UserModel currentUser;
