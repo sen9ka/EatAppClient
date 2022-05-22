@@ -29,6 +29,7 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.FirebaseAppLifecycleListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
@@ -170,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setMessage("Please Fill Information");
 
         View itemView= LayoutInflater.from(this).inflate(R.layout.layout_register, null);
-
+        TextInputLayout phone_input_layout = (TextInputLayout)itemView.findViewById(R.id.phone_input_layout);
         EditText edt_name= (EditText)itemView.findViewById(R.id.edt_name);
         TextView txt_address_detail = (TextView) itemView.findViewById(R.id.txt_address_detail);
         EditText edt_phone= (EditText)itemView.findViewById(R.id.edt_phone);
@@ -194,7 +195,14 @@ public class MainActivity extends AppCompatActivity {
 
 
         //set data
-        edt_phone.setText(user.getPhoneNumber());
+        if(user.getPhoneNumber() == null || TextUtils.isEmpty(user.getPhoneNumber()))
+        {
+            phone_input_layout.setHint("Email");
+            edt_phone.setText(user.getEmail());
+            edt_name.setText(user.getDisplayName());
+        }
+        else
+            edt_phone.setText(user.getPhoneNumber());
 
 
         builder.setNegativeButton("CANCEL", (dialogInterface, which) -> dialogInterface.dismiss());
