@@ -170,7 +170,6 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
         RadioButton rdi_other_address = (RadioButton) view.findViewById(R.id.rdi_other_address);
         RadioButton rdi_ship_to_this = (RadioButton) view.findViewById(R.id.rdi_ship_this_address);
         RadioButton rdi_cod = (RadioButton) view.findViewById(R.id.rdi_cod);
-        RadioButton rdi_braintree = (RadioButton) view.findViewById(R.id.rdi_braintree);
 
         places_fragment = (AutocompleteSupportFragment)getActivity().getSupportFragmentManager()
                 .findFragmentById(R.id.places_autocomplete_fragment);
@@ -340,7 +339,9 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
     private void writeOrderToFirebase(OrderModel orderModel) {
         FirebaseDatabase.getInstance()
-                .getReference(Common.ORDER_REF)
+                .getReference(Common.RESTAURANT_REF)
+                .child(Common.currentRestaurant.getUid())
+                .child(Common.ORDER_REF)
                 .child(Common.createOrderNumber()) //создадим номер заказа только из цифр
                 .setValue(orderModel)
                 .addOnFailureListener(e -> {

@@ -110,15 +110,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
-        <RadioButton
-            android:id="@+id/rdi_braintree"
-            android:text="@string/braintree"
-            android:fontFamily="@font/brandon_medium"
-            android:textSize="18sp"
-            android:textStyle="italic"
-            android:textColor="@color/dialog_text_color"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
 
     </RadioGroup>
 

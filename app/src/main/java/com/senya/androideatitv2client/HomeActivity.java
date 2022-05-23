@@ -76,6 +76,7 @@ import butterknife.ButterKnife;
 import io.paperdb.Paper;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -96,6 +97,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private NavigationView navigationView;
     private CartDataSource cartDataSource;
     android.app.AlertDialog dialog;
+
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     int menuClickId=-1;
 
@@ -374,6 +377,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onStop() {
         EventBus.getDefault().unregister(this);
+        compositeDisposable.clear();
         super.onStop();
     }
 
@@ -612,7 +616,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         EventBus.getDefault().postSticky(new MenuInflateEvent(true));
         EventBus.getDefault().postSticky(new HideFABCart(false));
         countCartItem();
-
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)

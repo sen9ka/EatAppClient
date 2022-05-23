@@ -33,6 +33,7 @@ import com.senya.androideatitv2client.Database.CartDatabase;
 import com.senya.androideatitv2client.Database.CartItem;
 import com.senya.androideatitv2client.Database.LocalCartDataSource;
 import com.senya.androideatitv2client.EventBus.CounterCartEvent;
+import com.senya.androideatitv2client.EventBus.MenuItemBack;
 import com.senya.androideatitv2client.Model.OrderModel;
 import com.senya.androideatitv2client.Model.ShippingOrderModel;
 import com.senya.androideatitv2client.R;
@@ -90,7 +91,10 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
 
     private void loadOrdersFromFirebase() {
         List<OrderModel> orderModelList = new ArrayList<>();
-        FirebaseDatabase.getInstance().getReference(Common.ORDER_REF)
+        FirebaseDatabase.getInstance()
+                .getReference(Common.RESTAURANT_REF)
+                .child(Common.currentRestaurant.getUid())
+                .child(Common.ORDER_REF)
                 .orderByChild("userId")
                 .equalTo(Common.currentUser.getUid())
                 .limitToLast(100)
@@ -270,5 +274,11 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
     public void onStop() {
         compositeDisposable.clear();
         super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().postSticky(new MenuItemBack());
+        super.onDestroy();
     }
 }
