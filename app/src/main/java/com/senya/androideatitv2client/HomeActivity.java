@@ -227,7 +227,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         View itemView= LayoutInflater.from(this).inflate(R.layout.layout_subscribe_news, null);
         CheckBox ckb_news = (CheckBox) itemView.findViewById(R.id.ckb_subscribe_news);
-        boolean isSubscribeNews = Paper.book().read(Common.IS_SUBSCRIBE_NEWS,false);
+        boolean isSubscribeNews = Paper.book().read(Common.currentRestaurant.getUid(),false);
         if(isSubscribeNews)
             ckb_news.setChecked(true);
         builder.setNegativeButton("CANCEL", (dialogInterface, i) -> {
@@ -235,17 +235,18 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         }).setPositiveButton("SEND", (dialogInterface, i) -> {
             if(ckb_news.isChecked())
             {
-                Paper.book().write(Common.IS_SUBSCRIBE_NEWS,true);
+                Toast.makeText(this, "TOPIC: "+Common.createTopicNews(), Toast.LENGTH_SHORT).show();
+                Paper.book().write(Common.currentRestaurant.getUid(),true);
                 FirebaseMessaging.getInstance()
-                        .subscribeToTopic(Common.NEWS_TOPIC)
+                        .subscribeToTopic(Common.createTopicNews())
                         .addOnFailureListener(e -> Toast.makeText(HomeActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
                         .addOnSuccessListener(unused -> Toast.makeText(HomeActivity.this, "Successfully subscribed!", Toast.LENGTH_SHORT).show());
             }
             else
             {
-                Paper.book().delete(Common.IS_SUBSCRIBE_NEWS);
+                Paper.book().delete(Common.currentRestaurant.getUid());
                 FirebaseMessaging.getInstance()
-                        .unsubscribeFromTopic(Common.NEWS_TOPIC)
+                        .unsubscribeFromTopic(Common.createTopicNews())
                         .addOnFailureListener(e -> Toast.makeText(HomeActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
                         .addOnSuccessListener(unused -> Toast.makeText(HomeActivity.this, "Successfully unsubscribed!", Toast.LENGTH_SHORT).show());
             }
