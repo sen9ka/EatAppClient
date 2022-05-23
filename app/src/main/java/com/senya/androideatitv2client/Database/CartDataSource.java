@@ -13,13 +13,13 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 
 public interface CartDataSource {
-    Flowable<List<CartItem>> getAllCart(String uid);
+    Flowable<List<CartItem>> getAllCart(String uid, String restaurantId);
 
-    Single<Integer> countItemInCart(String uid);
+    Single<Integer> countItemInCart(String uid, String restaurantId);
 
-    Single<Double> sumPriceInCart(String uid);
+    Single<Double> sumPriceInCart(String uid, String restaurantId);
 
-    Single<CartItem> getItemInCart(String foodId, String uid);
+    Single<CartItem> getItemInCart(String foodId, String uid, String restaurantId);
 
     Completable insertOrReplaceAll(CartItem... cartItems);
 
@@ -27,7 +27,7 @@ public interface CartDataSource {
 
     Single<Integer> deleteCartItem(CartItem cartItem);
 
-    Single<Integer> cleanCart(String uid);
+    Single<Integer> cleanCart(String uid, String restaurantId);
 
-    Single<CartItem> getItemWithAllOptionsInCart(String uid, String categoryId, String foodId, String foodSize, String foodAddon);
+    Single<CartItem> getItemWithAllOptionsInCart(String uid, String categoryId, String foodId, String foodSize, String foodAddon, String restaurantId);
 }

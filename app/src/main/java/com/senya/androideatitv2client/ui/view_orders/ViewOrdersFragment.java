@@ -211,7 +211,7 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
                             OrderModel orderModel = ((MyOrdersAdapter)recycler_orders.getAdapter()).getItemAtPosition(pos);
 
                             dialog.show();
-                            cartDataSource.cleanCart(Common.currentUser.getUid())
+                            cartDataSource.cleanCart(Common.currentUser.getUid(),Common.currentRestaurant.getUid())
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(new SingleObserver<Integer>() {

@@ -74,6 +74,8 @@ public class MyFoodListAdapter extends RecyclerView.Adapter<MyFoodListAdapter.My
 
         holder.img_cart.setOnClickListener(v -> {
             CartItem cartItem = new CartItem();
+
+            cartItem.setRestaurantId(Common.currentRestaurant.getUid());
             cartItem.setUid(Common.currentUser.getUid());
             cartItem.setUserPhone(Common.currentUser.getPhone());
 
@@ -91,7 +93,7 @@ public class MyFoodListAdapter extends RecyclerView.Adapter<MyFoodListAdapter.My
             Common.categorySelected.getMenu_id(),
             cartItem.getFoodId(),
             cartItem.getFoodSize(),
-            cartItem.getFoodAddon())
+            cartItem.getFoodAddon(),Common.currentRestaurant.getUid())
             .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new SingleObserver<CartItem>() {

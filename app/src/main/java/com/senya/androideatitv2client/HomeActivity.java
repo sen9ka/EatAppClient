@@ -52,6 +52,7 @@ import com.senya.androideatitv2client.EventBus.CategoryClick;
 import com.senya.androideatitv2client.EventBus.CounterCartEvent;
 import com.senya.androideatitv2client.EventBus.FoodItemClick;
 import com.senya.androideatitv2client.EventBus.HideFABCart;
+import com.senya.androideatitv2client.EventBus.MenuInflateEvent;
 import com.senya.androideatitv2client.EventBus.MenuItemBack;
 import com.senya.androideatitv2client.EventBus.MenuItemEvent;
 import com.senya.androideatitv2client.EventBus.PopularCategoryClick;
@@ -104,7 +105,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onResume() {
         super.onResume();
-        countCartItem();
+        //countCartItem();
     }
 
     @Override
@@ -144,7 +145,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         TextView txt_user = (TextView) headerView.findViewById(R.id.txt_user);
         Common.setSpanString("Hello, ", Common.currentUser.getName(),txt_user);
 
-        countCartItem();
+        //не видим корзину при выборе ресторанов
+        EventBus.getDefault().postSticky(new HideFABCart(true));
     }
 
     private void initPlaceClient() {
@@ -177,19 +179,28 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_home:
                 if(item.getItemId() != menuClickId)
+                {
                     navController.navigate(R.id.nav_home);
+                    EventBus.getDefault().postSticky(new MenuInflateEvent(true));
+                }
                 break;
             case R.id.nav_menu:
-                if(item.getItemId() != menuClickId)
+                if(item.getItemId() != menuClickId) {
                     navController.navigate(R.id.nav_menu);
+                    EventBus.getDefault().postSticky(new MenuInflateEvent(true));
+                }
                 break;
             case R.id.nav_cart:
-                if(item.getItemId() != menuClickId)
+                if(item.getItemId() != menuClickId) {
                     navController.navigate(R.id.nav_cart);
+                    EventBus.getDefault().postSticky(new MenuInflateEvent(true));
+                }
                 break;
             case R.id.nav_view_orders:
-                if(item.getItemId() != menuClickId)
+                if(item.getItemId() != menuClickId) {
                     navController.navigate(R.id.nav_view_orders);
+                    EventBus.getDefault().postSticky(new MenuInflateEvent(true));
+                }
                 break;
             case R.id.nav_sign_out:
                 signOut();
@@ -267,8 +278,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 Toast.makeText(HomeActivity.this, ""+status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
-
 
         //set data
         edt_name.setText(Common.currentUser.getName());
@@ -401,10 +410,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onCartCounter(CounterCartEvent event)
     {
-        if(event.isSuccess())
-        {
-            countCartItem();
-        }
+        //if(event.isSuccess())
+        //{
+            //countCartItem();
+       // }
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -412,9 +421,13 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     {
         if(event.getBestDealModel() != null)
         {
+
             dialog.show();
+
             FirebaseDatabase.getInstance()
-                    .getReference("Category")
+                    .getReference(Common.RESTAURANT_REF)
+                    .child(Common.currentRestaurant.getUid())
+                    .child(Common.CATEGORY_REF)
                     .child(event.getBestDealModel().getMenu_id())
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -426,7 +439,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
                                 //Load food item
                                 FirebaseDatabase.getInstance()
-                                        .getReference("Category")
+                                        .getReference(Common.RESTAURANT_REF)
+                                        .child(Common.currentRestaurant.getUid())
+                                        .child(Common.CATEGORY_REF)
                                         .child(event.getBestDealModel().getMenu_id())
                                         .child("foods")
                                         .orderByChild("id")
@@ -481,7 +496,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         {
             dialog.show();
             FirebaseDatabase.getInstance()
-                    .getReference("Category")
+                    .getReference(Common.RESTAURANT_REF)
+                    .child(Common.currentRestaurant.getUid())
+                    .child(Common.CATEGORY_REF)
                     .child(event.getPopularCategoryModel().getMenu_id())
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -493,7 +510,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
                                 //Load food item
                                 FirebaseDatabase.getInstance()
-                                        .getReference("Category")
+                                        .getReference(Common.RESTAURANT_REF)
+                                        .child(Common.currentRestaurant.getUid())
+                                        .child(Common.CATEGORY_REF)
                                         .child(event.getPopularCategoryModel().getMenu_id())
                                         .child("foods")
                                         .orderByChild("id")
@@ -542,7 +561,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void countCartItem() {
-        cartDataSource.countItemInCart(Common.currentUser.getUid())
+        cartDataSource.countItemInCart(Common.currentUser.getUid(),Common.currentRestaurant.getUid())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new SingleObserver<Integer>() {
@@ -572,7 +591,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     public void countCartAgain(CounterCartEvent event)
     {
         if(event.isSuccess())
-            countCartItem();
+            if(Common.currentRestaurant != null)
+                countCartItem();
     }
 
    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -589,8 +609,21 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         Bundle bundle = new Bundle();
         bundle.putString("restaurant",event.getRestaurantModel().getUid());
         navController.navigate(R.id.nav_home,bundle);
+        EventBus.getDefault().postSticky(new MenuInflateEvent(true));
+        EventBus.getDefault().postSticky(new HideFABCart(false));
+        countCartItem();
+
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onInflateMenu(MenuInflateEvent event)
+    {
         navigationView.getMenu().clear();
-        navigationView.inflateMenu(R.menu.restaurant_detail_menu);
+        if(event.isShowDetail())
+            navigationView.inflateMenu(R.menu.restaurant_detail_menu);
+        else
+            navigationView.inflateMenu(R.menu.activity_home_drawer);
+
     }
 
 }

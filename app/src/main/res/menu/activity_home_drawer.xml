@@ -11,14 +11,6 @@
 
     </group>
 
-
-
-
-
-
-
-
-
     <group >
         <item
             android:id="@+id/nav_update_info"

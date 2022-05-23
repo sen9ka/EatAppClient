@@ -20,7 +20,12 @@ import android.view.animation.LayoutAnimationController;
 import android.widget.Toast;
 
 import com.senya.androideatitv2client.Adapter.MyRestaurantAdapter;
+import com.senya.androideatitv2client.EventBus.CounterCartEvent;
+import com.senya.androideatitv2client.EventBus.HideFABCart;
+import com.senya.androideatitv2client.EventBus.MenuInflateEvent;
 import com.senya.androideatitv2client.R;
+
+import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -63,6 +68,7 @@ public class RestaurantFragment extends Fragment {
     }
 
     private void initViews() {
+        EventBus.getDefault().postSticky(new HideFABCart(true));
         setHasOptionsMenu(true);
         dialog = new AlertDialog.Builder(getContext()).setCancelable(false)
                 .setMessage("Please wait...").create();
@@ -75,4 +81,10 @@ public class RestaurantFragment extends Fragment {
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        EventBus.getDefault().postSticky(new CounterCartEvent(true));
+        EventBus.getDefault().postSticky(new MenuInflateEvent(false));
+    }
 }
