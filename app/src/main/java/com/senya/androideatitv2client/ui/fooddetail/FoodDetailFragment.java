@@ -354,7 +354,9 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
         waitingDialog.show();
         //submit to Comments ref
         FirebaseDatabase.getInstance()
-                .getReference(Common.COMMENT_REF)
+                .getReference(Common.RESTAURANT_REF)
+                .child(Common.currentRestaurant.getUid())
+                .child(Common.COMMENT_REF)
                 .child(Common.selectedFood.getId())
                 .push()
                 .setValue(commentModel)
@@ -368,7 +370,9 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
 
     private void addRatingToFood(float ratingValue) {
         FirebaseDatabase.getInstance()
-                .getReference(Common.CATEGORY_REF)
+                .getReference(Common.RESTAURANT_REF)
+                .child(Common.currentRestaurant.getUid())
+                .child(Common.CATEGORY_REF)
                 .child(Common.categorySelected.getMenu_id())
                 .child("foods")
                 .child(Common.selectedFood.getKey())

@@ -251,6 +251,13 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
         });
 
         AlertDialog dialog = builder.create();
+        dialog.setOnDismissListener(dialogInterface -> {
+
+            if(places_fragment != null)
+                getActivity().getSupportFragmentManager()
+                .beginTransaction().remove(places_fragment)
+                .commit();
+        });
         dialog.show();
 
     }
@@ -529,7 +536,9 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
                             CartItem cartItem = adapter.getItemAtPosition(pos);
                             FirebaseDatabase.getInstance()
-                                    .getReference(Common.CATEGORY_REF)
+                                    .getReference(Common.RESTAURANT_REF)
+                                    .child(Common.currentRestaurant.getUid())
+                                    .child(Common.CATEGORY_REF)
                                     .child(cartItem.getCategoryId())
                                     .addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
@@ -672,6 +681,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
     @Override
     public void onStop() {
         EventBus.getDefault().postSticky(new HideFABCart(false));
+        EventBus.getDefault().postSticky(new CounterCartEvent(false));
         cartViewModel.onStop();
         if (EventBus.getDefault().isRegistered(this))
             EventBus.getDefault().unregister(this);
