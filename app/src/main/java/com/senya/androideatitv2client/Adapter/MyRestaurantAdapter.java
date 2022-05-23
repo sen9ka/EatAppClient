@@ -12,8 +12,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.senya.androideatitv2client.Callback.IRecyclerClickListener;
+import com.senya.androideatitv2client.Common.Common;
+import com.senya.androideatitv2client.EventBus.MenuItemEvent;
 import com.senya.androideatitv2client.Model.RestaurantModel;
 import com.senya.androideatitv2client.R;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
@@ -47,7 +51,8 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
 
         //Event
         holder.setListener((view, pos) -> {
-            //Код позже
+            Common.currentRestaurant = restaurantModelList.get(pos);
+            EventBus.getDefault().postSticky(new MenuItemEvent(true,restaurantModelList.get(pos)));
         });
     }
 

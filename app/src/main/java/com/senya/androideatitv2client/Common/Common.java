@@ -30,6 +30,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.senya.androideatitv2client.Model.AddonModel;
 import com.senya.androideatitv2client.Model.CategoryModel;
 import com.senya.androideatitv2client.Model.FoodModel;
+import com.senya.androideatitv2client.Model.RestaurantModel;
 import com.senya.androideatitv2client.Model.ShippingOrderModel;
 import com.senya.androideatitv2client.Model.SizeModel;
 import com.senya.androideatitv2client.Model.TokenModel;
@@ -65,6 +66,7 @@ public class Common {
     public static CategoryModel categorySelected;
     public static FoodModel selectedFood;
     public static ShippingOrderModel currentShippingOrder;
+    public static RestaurantModel currentRestaurant;
 
     public static String formatPrice(double price) {
         if(price != 0)

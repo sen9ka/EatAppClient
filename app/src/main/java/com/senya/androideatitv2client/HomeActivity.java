@@ -53,6 +53,7 @@ import com.senya.androideatitv2client.EventBus.CounterCartEvent;
 import com.senya.androideatitv2client.EventBus.FoodItemClick;
 import com.senya.androideatitv2client.EventBus.HideFABCart;
 import com.senya.androideatitv2client.EventBus.MenuItemBack;
+import com.senya.androideatitv2client.EventBus.MenuItemEvent;
 import com.senya.androideatitv2client.EventBus.PopularCategoryClick;
 import com.senya.androideatitv2client.Model.CategoryModel;
 import com.senya.androideatitv2client.Model.FoodModel;
@@ -170,6 +171,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         item.setChecked(true);
         drawer.closeDrawers();
         switch (item.getItemId()){
+            case R.id.nav_restaurant:
+                if(item.getItemId() != menuClickId)
+                    navController.navigate(R.id.nav_restaurant);
+                break;
             case R.id.nav_home:
                 if(item.getItemId() != menuClickId)
                     navController.navigate(R.id.nav_home);
@@ -577,5 +582,15 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
        if(getSupportFragmentManager().getBackStackEntryCount() > 0)
            getSupportFragmentManager().popBackStack();
    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onRestaurantClick(MenuItemEvent event)
+    {
+        Bundle bundle = new Bundle();
+        bundle.putString("restaurant",event.getRestaurantModel().getUid());
+        navController.navigate(R.id.nav_home,bundle);
+        navigationView.getMenu().clear();
+        navigationView.inflateMenu(R.menu.restaurant_detail_menu);
+    }
 
 }

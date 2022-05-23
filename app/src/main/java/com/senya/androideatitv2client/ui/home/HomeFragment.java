@@ -45,15 +45,18 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         unbinder = ButterKnife.bind(this,root);
+
+        String key = getArguments().getString("restaurant");
+
         init();
-        homeViewModel.getPopularList().observe(getActivity(),popularCategoryModels -> {
+        homeViewModel.getPopularList(key).observe(getActivity(),popularCategoryModels -> {
 
             //Create adapter
             MyPopularCategoriesAdapter adapter = new MyPopularCategoriesAdapter(getContext(),popularCategoryModels);
             recycler_popular.setAdapter(adapter);
         });
 
-        homeViewModel.getBestDealList().observe(getActivity(),bestDealModels -> {
+        homeViewModel.getBestDealList(key).observe(getActivity(),bestDealModels -> {
             MyBestDealsAdapter adapter = new MyBestDealsAdapter(getContext(),bestDealModels,true);
             viewPager.setAdapter(adapter);
         });
