@@ -57,6 +57,7 @@ public class Common {
     public static final String ORDER_REF = "Order";
     public static final String RESTAURANT_REF = "Restaurant";
     public static final String CHAT_REF = "Chat";
+    public static final String CHAT_DETAIL_REF = "ChatDetail";
     private static final String TOKEN_REF = "Tokens";
     public static final String SHIPPING_ORDER_REF = "ShippingOrder";
 

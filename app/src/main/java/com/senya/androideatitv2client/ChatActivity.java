@@ -45,6 +45,7 @@ import com.google.firebase.storage.UploadTask;
 import com.senya.androideatitv2client.Callback.ILoadTimeFromFirebaseListener;
 import com.senya.androideatitv2client.Common.Common;
 import com.senya.androideatitv2client.EventBus.HideFABCart;
+import com.senya.androideatitv2client.Model.ChatInfoModel;
 import com.senya.androideatitv2client.Model.ChatMessageModel;
 import com.senya.androideatitv2client.Model.OrderModel;
 import com.senya.androideatitv2client.ViewHolder.ChatPictureHolder;
@@ -59,6 +60,8 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import butterknife.BindView;
@@ -246,7 +249,8 @@ public class ChatActivity extends AppCompatActivity implements ILoadTimeFromFire
         offsetRef = database.getReference(".info/serverTimeOffset");
 
         Query query = chatRef.child(Common.generateChatRoomId(Common.currentRestaurant.getUid(),
-                Common.currentUser.getUid()));
+                Common.currentUser.getUid()))
+                .child(Common.CHAT_DETAIL_REF);
 
         options = new FirebaseRecyclerOptions.Builder<ChatMessageModel>()
                 .setQuery(query,ChatMessageModel.class)
@@ -310,15 +314,15 @@ public class ChatActivity extends AppCompatActivity implements ILoadTimeFromFire
         if(fileUri == null)
         {
             chatMessageModel.setPicture(false);
-            submitChatToFirebase(chatMessageModel,chatMessageModel.isPicture());
+            submitChatToFirebase(chatMessageModel,chatMessageModel.isPicture(), estimateTimeInMs);
         }
         else
         {
-            uploadPicture(fileUri,chatMessageModel);
+            uploadPicture(fileUri,chatMessageModel,estimateTimeInMs);
         }
     }
 
-    private void uploadPicture(Uri fileUri, ChatMessageModel chatMessageModel) {
+    private void uploadPicture(Uri fileUri, ChatMessageModel chatMessageModel, long estimateTimeInMs) {
         if(fileUri != null)
         {
             AlertDialog dialog = new AlertDialog.Builder(ChatActivity.this)
@@ -350,7 +354,7 @@ public class ChatActivity extends AppCompatActivity implements ILoadTimeFromFire
                     chatMessageModel.setPicture(true);
                     chatMessageModel.setPictureLink(url);
 
-                    submitChatToFirebase(chatMessageModel,chatMessageModel.isPicture());
+                    submitChatToFirebase(chatMessageModel,chatMessageModel.isPicture(),estimateTimeInMs);
                 }
             }).addOnFailureListener(e -> {
                 Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -360,26 +364,110 @@ public class ChatActivity extends AppCompatActivity implements ILoadTimeFromFire
             Toast.makeText(this, "Image is empty", Toast.LENGTH_SHORT).show();
     }
 
-    private void submitChatToFirebase(ChatMessageModel chatMessageModel, boolean isPicture) {
+    private void submitChatToFirebase(ChatMessageModel chatMessageModel, boolean isPicture, long estimateTimeInMs) {
         chatRef.child(Common.generateChatRoomId(Common.currentRestaurant.getUid(),
                 Common.currentUser.getUid()))
-                .push()
-                .setValue(chatMessageModel)
-                .addOnFailureListener(e -> Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
-                .addOnCompleteListener(task -> {
-                    if(task.isSuccessful())
-                    {
-                        edt_chat.setText("");
-                        edt_chat.requestFocus();
-                        if(adapter != null)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.exists())
                         {
-                            adapter.notifyDataSetChanged();
-                            if(isPicture)
-                            {
-                                fileUri = null;
-                                img_preview.setVisibility(View.GONE);
-                            }
+                            appendChat(chatMessageModel,isPicture,estimateTimeInMs);
                         }
+                        else
+                        {
+                            createChat(chatMessageModel,isPicture,estimateTimeInMs);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Toast.makeText(ChatActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void appendChat(ChatMessageModel chatMessageModel, boolean isPicture, long estimateTimeInMs) {
+        Map<String,Object> update_data = new HashMap<>();
+        update_data.put("lastUpdate",estimateTimeInMs);
+        if(isPicture)
+            update_data.put("lastMessage","<Image>");
+        else
+            update_data.put("lastMessage",chatMessageModel.getContent());
+
+        chatRef.child(Common.generateChatRoomId(Common.currentRestaurant.getUid(),
+                Common.currentUser.getUid()))
+                .updateChildren(update_data)
+                .addOnFailureListener(e ->
+                        Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
+                .addOnCompleteListener(task2 -> {
+                    if(task2.isSuccessful())
+                    {
+                        chatRef.child(Common.generateChatRoomId(Common.currentRestaurant.getUid(),
+                                Common.currentUser.getUid()))
+                                .child(Common.CHAT_DETAIL_REF)
+                                .push()
+                                .setValue(chatMessageModel)
+                                .addOnFailureListener(e -> Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
+                                .addOnCompleteListener(task -> {
+                                    if(task.isSuccessful())
+                                    {
+                                        edt_chat.setText("");
+                                        edt_chat.requestFocus();
+                                        if(adapter != null)
+                                        {
+                                            adapter.notifyDataSetChanged();
+                                            if(isPicture)
+                                            {
+                                                fileUri = null;
+                                                img_preview.setVisibility(View.GONE);
+                                            }
+                                        }
+                                    }
+                                });
+                    }
+                });
+    }
+
+    private void createChat(ChatMessageModel chatMessageModel, boolean isPicture, long estimateTimeInMs) {
+        ChatInfoModel chatInfoModel = new ChatInfoModel();
+        chatInfoModel.setCreateName(chatMessageModel.getName());
+        if(isPicture)
+            chatInfoModel.setLastMessage("<Image>");
+        else
+            chatInfoModel.setLastMessage(chatMessageModel.getContent());
+        chatInfoModel.setLastUpdate(estimateTimeInMs);
+        chatInfoModel.setCreateDate(estimateTimeInMs);
+
+        chatRef.child(Common.generateChatRoomId(Common.currentRestaurant.getUid(),Common.currentUser.getUid()))
+                .setValue(chatInfoModel)
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }).addOnCompleteListener(task2 -> {
+                    if(task2.isSuccessful())
+                    {
+                        chatRef.child(Common.generateChatRoomId(Common.currentRestaurant.getUid(),
+                                Common.currentUser.getUid()))
+                                .child(Common.CHAT_DETAIL_REF)
+                                .push()
+                                .setValue(chatMessageModel)
+                                .addOnFailureListener(e -> Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
+                                .addOnCompleteListener(task -> {
+                                    if(task.isSuccessful())
+                                    {
+                                        edt_chat.setText("");
+                                        edt_chat.requestFocus();
+                                        if(adapter != null)
+                                        {
+                                            adapter.notifyDataSetChanged();
+                                            if(isPicture)
+                                            {
+                                                fileUri = null;
+                                                img_preview.setVisibility(View.GONE);
+                                            }
+                                        }
+                                    }
+                                });
                     }
                 });
     }
