@@ -680,6 +680,8 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
     @Override
     public void onStop() {
+        EventBus.getDefault().removeAllStickyEvents();
+
         EventBus.getDefault().postSticky(new HideFABCart(false));
         EventBus.getDefault().postSticky(new CounterCartEvent(false));
         cartViewModel.onStop();
