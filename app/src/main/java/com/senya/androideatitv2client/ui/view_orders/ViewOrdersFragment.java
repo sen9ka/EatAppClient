@@ -133,16 +133,16 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
         MySwipeHelper mySwipeHelper = new MySwipeHelper(getContext(), recycler_orders, 250) {
             @Override
             public void instantiateMyButton(RecyclerView.ViewHolder viewHolder, List<MyButton> buf) {
-                buf.add(new MyButton(getContext(), "Cancel Order", 30, 0, Color.parseColor("#FF3C30"),
+                buf.add(new MyButton(getContext(), "Отменить заказ", 30, 0, Color.parseColor("#FF3C30"),
                         pos -> {
                             OrderModel orderModel = ((MyOrdersAdapter)recycler_orders.getAdapter()).getItemAtPosition(pos);
                             if(orderModel.getOrderStatus() == 0)
                             {
                                 androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(getContext());
-                                builder.setTitle("Cancel Order")
-                                        .setMessage("Do you really want to cancel this order?")
-                                        .setNegativeButton("NO", (dialogInterface, i) -> dialogInterface.dismiss())
-                                        .setPositiveButton("YES", (dialogInterface, i) -> {
+                                builder.setTitle("CОтмена заказа")
+                                        .setMessage("Вы действительно хотите отменить заказ?")
+                                        .setNegativeButton("НЕТ", (dialogInterface, i) -> dialogInterface.dismiss())
+                                        .setPositiveButton("ДА", (dialogInterface, i) -> {
 
                                             Map<String,Object> update_data = new HashMap<>();
                                             update_data.put("orderStatus", -1);
@@ -157,7 +157,7 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
                                                         orderModel.setOrderStatus(-1);
                                                         ((MyOrdersAdapter)recycler_orders.getAdapter()).setItemAtPosition(pos,orderModel);
                                                         recycler_orders.getAdapter().notifyItemChanged(pos);
-                                                        Toast.makeText(getContext(), "Order successfully cancelled", Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(getContext(), "Заказ отменен", Toast.LENGTH_SHORT).show();
                                                     });
                                         });
                                 androidx.appcompat.app.AlertDialog dialog = builder.create();
@@ -165,13 +165,13 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
                             }
                             else
                             {
-                                Toast.makeText(getContext(), new StringBuilder("Your order has been changed to ")
+                                Toast.makeText(getContext(), new StringBuilder("Статус заказа изменен на ")
                                         .append(Common.convertStatusToText(orderModel.getOrderStatus()))
-                                        .append(", so you can`t cancel it"), Toast.LENGTH_SHORT).show();
+                                        .append(", так что отмена невозможна"), Toast.LENGTH_SHORT).show();
                             }
                         }));
 
-                buf.add(new MyButton(getContext(), "Track Order", 30, 0, Color.parseColor("#001970"),
+                buf.add(new MyButton(getContext(), "Отслеживание", 30, 0, Color.parseColor("#001970"),
                         pos -> {
                             OrderModel orderModel = ((MyOrdersAdapter)recycler_orders.getAdapter()).getItemAtPosition(pos);
 
@@ -196,12 +196,12 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
                                                 }
                                                 else
                                                 {
-                                                    Toast.makeText(getContext(), "Shipper has not started your delivery yet", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(getContext(), "Курьер еще не начал доставку", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                             else 
                                             {
-                                                Toast.makeText(getContext(), "Wait, handing over to the shipper", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(getContext(), "Передаем курьеру", Toast.LENGTH_SHORT).show();
                                             }
                                         }
 
@@ -213,7 +213,7 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
 
                         }));
 
-                buf.add(new MyButton(getContext(), "Repeat Order", 30, 0, Color.parseColor("#5d4037"),
+                buf.add(new MyButton(getContext(), "Повторить заказ", 30, 0, Color.parseColor("#5d4037"),
                         pos -> {
 
                             OrderModel orderModel = ((MyOrdersAdapter)recycler_orders.getAdapter()).getItemAtPosition(pos);
@@ -239,7 +239,7 @@ public class ViewOrdersFragment extends Fragment implements ILoadOrderCallbackLi
                                                     .observeOn(AndroidSchedulers.mainThread())
                                                     .subscribe(() -> {
                                                         dialog.dismiss();
-                                                        Toast.makeText(getContext(), "Added to cart successfully", Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(getContext(), "Добавлено в корзину", Toast.LENGTH_SHORT).show();
                                                         EventBus.getDefault().postSticky(new CounterCartEvent(true));
 
                                                     },throwable -> {

@@ -43,7 +43,7 @@
         <EditText
             android:id="@+id/edt_phone"
             android:focusable="false"
-            android:hint="@string/your_address"
+            android:hint="@string/your_phone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 

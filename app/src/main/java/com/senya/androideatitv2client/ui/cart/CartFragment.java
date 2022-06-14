@@ -242,9 +242,9 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
 
         builder.setView(view);
-        builder.setNegativeButton("NO", (dialog, which) -> {
+        builder.setNegativeButton("НЕТ", (dialog, which) -> {
             dialog.dismiss();
-        }).setPositiveButton("YES", (dialog, which) -> {
+        }).setPositiveButton("ДА", (dialog, which) -> {
             //Toast.makeText(getContext(), "Implement later", Toast.LENGTH_SHORT).show();
             if(rdi_cod.isChecked())
                 paymentCOD(txt_address.getText().toString(),edt_comment.getText().toString());
@@ -367,7 +367,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
                                 public void onSuccess(Integer integer) {
                                     Map<String,String> notiData = new HashMap<>();
                                     notiData.put(Common.NOTI_TITLE,"New Order");
-                                    notiData.put(Common.NOTI_CONTENT,"You have new order from "+Common.currentUser.getPhone());
+                                    notiData.put(Common.NOTI_CONTENT,"У вас новый заказ от "+Common.currentUser.getPhone());
 
                                     FCMSendData sendData = new FCMSendData(Common.createTopicOrder(),notiData);
 
@@ -375,11 +375,11 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(fcmResponse -> {
-                                        Toast.makeText(getContext(), "Order placed successfully!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), "Заказ успешно оставлен!", Toast.LENGTH_SHORT).show();
                                         EventBus.getDefault().postSticky(new CounterCartEvent(true));
 
                                     }, throwable -> {
-                                        Toast.makeText(getContext(), "Failure to send notification", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), "Ошибка отправки уведомления", Toast.LENGTH_SHORT).show();
                                         EventBus.getDefault().postSticky(new CounterCartEvent(true));
                                     }));
                                    }
@@ -404,7 +404,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
                 result = sb.toString();
             }
             else
-                result = "Address can not be found";
+                result = "Не можем найти адрес";
         } catch (IOException e) {
             e.printStackTrace();
             result = e.getMessage();
@@ -504,7 +504,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
         MySwipeHelper mySwipeHelper = new MySwipeHelper(getContext(), recycler_cart, 200) {
             @Override
             public void instantiateMyButton(RecyclerView.ViewHolder viewHolder, List<MyButton> buf) {
-                buf.add(new MyButton(getContext(), "Delete", 30, 0, Color.parseColor("#FF3C30"),
+                buf.add(new MyButton(getContext(), "Удалить", 30, 0, Color.parseColor("#FF3C30"),
                         pos -> {
                             CartItem cartItem = adapter.getItemAtPosition(pos);
                             cartDataSource.deleteCartItem(cartItem)
@@ -521,7 +521,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
                                             adapter.notifyItemRemoved(pos);
                                             sumAllItemInCart();
                                             EventBus.getDefault().postSticky(new CounterCartEvent(true)); // Update FAB
-                                            Toast.makeText(getContext(), "Item deleted from cart", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getContext(), "Блюдо удалено из корзины", Toast.LENGTH_SHORT).show();
                                         }
 
                                         @Override
@@ -531,7 +531,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
                                     });
                         }));
 
-                buf.add(new MyButton(getContext(), "Update", 30, 0, Color.parseColor("#5D4037"),
+                buf.add(new MyButton(getContext(), "Обновить", 30, 0, Color.parseColor("#5D4037"),
                         pos -> {
 
                             CartItem cartItem = adapter.getItemAtPosition(pos);
@@ -550,7 +550,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
                                             }
                                             else
                                             {
-                                                searchFoodCallbackListener.onSearchCategoryNotFound("Food was not found");
+                                                searchFoodCallbackListener.onSearchCategoryNotFound("Блюда не найдено");
                                             }
                                         }
 
@@ -620,7 +620,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
                     @Override
                     public void onSuccess(Double aDouble) {
-                        txt_total_price.setText(new StringBuilder("Total: $").append(aDouble));
+                        txt_total_price.setText(new StringBuilder("Всего: $").append(aDouble));
                     }
 
                     @Override
@@ -657,7 +657,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
                         @Override
                         public void onSuccess(Integer integer) {
-                            Toast.makeText(getContext(), "Cart cleared successfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Корзина очищена", Toast.LENGTH_SHORT).show();
                             EventBus.getDefault().postSticky(new CounterCartEvent(true));
                         }
 
@@ -751,7 +751,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
                     @Override
                     public void onSuccess(Double price) {
-                        txt_total_price.setText(new StringBuilder("Total: $")
+                        txt_total_price.setText(new StringBuilder("Всего: $")
                         .append(Common.formatPrice(price)));
                     }
 

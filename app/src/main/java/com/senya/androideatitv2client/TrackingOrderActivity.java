@@ -90,7 +90,7 @@ public class TrackingOrderActivity extends FragmentActivity implements OnMapRead
     @OnClick(R.id.btn_call)
     void onCallClick(){
         Intent intent = new Intent(Intent.ACTION_CALL);
-        intent.setData(Uri.parse(new StringBuilder("Tel: ").append(Common.currentShippingOrder.getShipperPhone()).toString()));
+        intent.setData(Uri.parse(new StringBuilder("Номер: ").append(Common.currentShippingOrder.getShipperPhone()).toString()));
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED){
 
             Dexter.withActivity(this)
@@ -103,7 +103,7 @@ public class TrackingOrderActivity extends FragmentActivity implements OnMapRead
 
                         @Override
                         public void onPermissionDenied(PermissionDeniedResponse response) {
-                            Toast.makeText(TrackingOrderActivity.this, "Enable permission to call", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(TrackingOrderActivity.this, "Примите разрешение для звонка", Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
@@ -197,10 +197,10 @@ public class TrackingOrderActivity extends FragmentActivity implements OnMapRead
 
             shipperMarker = mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromBitmap(resized))
-                    .title(new StringBuilder("Shipper: ").append(Common.currentShippingOrder.getShipperName()).toString())
-                    .snippet(new StringBuilder("Phone: ").append(Common.currentShippingOrder.getShipperPhone())
+                    .title(new StringBuilder("Курьер: ").append(Common.currentShippingOrder.getShipperName()).toString())
+                    .snippet(new StringBuilder("Номер: ").append(Common.currentShippingOrder.getShipperPhone())
                     .append("\n")
-                    .append("Estimate Delivery Time: ")
+                    .append("Ожидаемое время доставки: ")
                     .append(Common.currentShippingOrder.getEstimateTime()).toString())
                     .position(locationShipper));
 

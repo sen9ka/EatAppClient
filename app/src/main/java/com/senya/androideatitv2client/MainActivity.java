@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 }
                             }
-                            Toast.makeText(MainActivity.this, "You must accept all permissions", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Разрешите требования", Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
@@ -174,8 +174,8 @@ public class MainActivity extends AppCompatActivity {
     private void showRegisterDialog(FirebaseUser user)
     {
         androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
-        builder.setTitle("Register");
-        builder.setMessage("Please Fill Information");
+        builder.setTitle("Регистрация");
+        builder.setMessage("Пожалуйста введите информацию");
 
         View itemView= LayoutInflater.from(this).inflate(R.layout.layout_register, null);
         TextInputLayout phone_input_layout = (TextInputLayout)itemView.findViewById(R.id.phone_input_layout);
@@ -212,13 +212,13 @@ public class MainActivity extends AppCompatActivity {
             edt_phone.setText(user.getPhoneNumber());
 
 
-        builder.setNegativeButton("CANCEL", (dialogInterface, which) -> dialogInterface.dismiss());
+        builder.setNegativeButton("ОТМЕНА", (dialogInterface, which) -> dialogInterface.dismiss());
 
-        builder.setPositiveButton("REGISTER", (dialogInterface, which) -> {
+        builder.setPositiveButton("РЕГИСТРАЦИЯ", (dialogInterface, which) -> {
 
             if(placeSelected != null) {
                 if (TextUtils.isEmpty(edt_name.getText().toString())) {
-                    Toast.makeText(this, "Please enter Name", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Пожалуйста введите имя", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 dialogInterface.dismiss();
 
-                                Toast.makeText(MainActivity.this, "Successfully Registered", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "Регистрация успешна", Toast.LENGTH_SHORT).show();
                                 goToHomeActivity(userModel);
                             }
 
@@ -245,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else
             {
-                Toast.makeText(this, "Please select address", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Пожалуйста выберите адрес", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -284,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else
             {
-                Toast.makeText(this, "SignIn Failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Ошибка входа", Toast.LENGTH_SHORT).show();
             }
         }
     }

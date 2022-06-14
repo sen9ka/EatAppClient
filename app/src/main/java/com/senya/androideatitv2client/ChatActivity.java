@@ -327,7 +327,7 @@ public class ChatActivity extends AppCompatActivity implements ILoadTimeFromFire
         {
             AlertDialog dialog = new AlertDialog.Builder(ChatActivity.this)
                     .setCancelable(false)
-                    .setMessage("Please wait...")
+                    .setMessage("Подождите...")
                     .create();
             dialog.show();
 
@@ -343,7 +343,7 @@ public class ChatActivity extends AppCompatActivity implements ILoadTimeFromFire
             //Create task
             Task<Uri> task = uploadTask.continueWithTask(task1 -> {
                 if(!task1.isSuccessful())
-                    Toast.makeText(this, "Failed to upload", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Ошибка загрузки", Toast.LENGTH_SHORT).show();
                 return storageReference.getDownloadUrl();
             }).addOnCompleteListener(task12 -> {
                 if(task12.isSuccessful())

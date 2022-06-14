@@ -178,7 +178,7 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
 
                                         @Override
                                         public void onSuccess(Integer integer) {
-                                            Toast.makeText(getContext(), "Cart successfully updated", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getContext(), "Корзина обновлена", Toast.LENGTH_SHORT).show();
                                             EventBus.getDefault().postSticky(new CounterCartEvent(true));
                                         }
 
@@ -195,7 +195,7 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(() -> {
-                                        Toast.makeText(getContext(), "Added to Cart successfully", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), "Добавлено в корзину", Toast.LENGTH_SHORT).show();
                                         EventBus.getDefault().postSticky(new CounterCartEvent(true));
                                     },throwable -> {
                                         Toast.makeText(getContext(), "[CART ERROR]"+throwable.getMessage(), Toast.LENGTH_SHORT).show();
@@ -212,7 +212,7 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(() -> {
-                                        Toast.makeText(getContext(), "Added to Cart successfully", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), "Добавлено в корзину", Toast.LENGTH_SHORT).show();
                                         EventBus.getDefault().postSticky(new CounterCartEvent(true));
                                     },throwable -> {
                                         Toast.makeText(getContext(), "[CART ERROR]"+throwable.getMessage(), Toast.LENGTH_SHORT).show();
@@ -266,8 +266,8 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
 
     private void showDialogRating() {
         androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(getContext());
-        builder.setTitle("Dish Rating");
-        builder.setMessage("Please Fill Information");
+        builder.setTitle("Рейтинг блюда");
+        builder.setMessage("Пожалуйста введите информацию");
 
         View itemView = LayoutInflater.from(getContext()).inflate(R.layout.layout_rating, null);
 
@@ -276,10 +276,10 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
 
         builder.setView(itemView);
 
-        builder.setNegativeButton("Cancel", (dialog, which) -> {
+        builder.setNegativeButton("Отмена", (dialog, which) -> {
             dialog.dismiss();
         });
-        builder.setPositiveButton("Ok", (dialog, which) -> {
+        builder.setPositiveButton("Ок", (dialog, which) -> {
             CommentModel commentModel = new CommentModel();
             commentModel.setName(Common.currentUser.getName());
             commentModel.setUid(Common.currentUser.getUid());
@@ -405,7 +405,7 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
                                     .addOnCompleteListener(task -> {
                                         waitingDialog.dismiss();
                                         if (task.isSuccessful()) {
-                                            Toast.makeText(getContext(), "Thank You!", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getContext(), "Спасибо!", Toast.LENGTH_SHORT).show();
                                             Common.selectedFood = foodModel;
                                             foodDetailViewModel.setFoodModel(foodModel); //vyzov perezagruzka
                                         }

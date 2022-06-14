@@ -71,7 +71,7 @@ public class RestaurantFragment extends Fragment {
         EventBus.getDefault().postSticky(new HideFABCart(true));
         setHasOptionsMenu(true);
         dialog = new AlertDialog.Builder(getContext()).setCancelable(false)
-                .setMessage("Please wait...").create();
+                .setMessage("Подождите...").create();
         dialog.show();
         layoutAnimationController = AnimationUtils.loadLayoutAnimation(getContext(),R.anim.layout_item_from_left);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());

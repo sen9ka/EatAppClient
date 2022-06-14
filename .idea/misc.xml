@@ -32,21 +32,21 @@
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_addon_display.xml" value="0.14542415378186377" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_addon_item.xml" value="0.25" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_best_deal_item.xml" value="0.25" />
-        <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_cart_item.xml" value="0.12396694214876033" />
+        <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_cart_item.xml" value="0.33" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_category_item.xml" value="0.22592592592592592" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_chip_with_delete_icon.xml" value="0.25" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_comment_item.xml" value="0.25" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_dialog_order_detail.xml" value="0.1762917933130699" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_dialog_update_cart.xml" value="0.2" />
-        <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_food_item.xml" value="0.1" />
+        <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_food_item.xml" value="0.33" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_food_list.xml" value="0.17806484295845998" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_layout_addon_display.xml" value="0.14688675302966986" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_marker_display.xml" value="0.17806484295845998" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_message_picture.xml" value="0.17806484295845998" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_message_text.xml" value="0.1" />
-        <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_order_detail_item.xml" value="0.1762917933130699" />
-        <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_order_item.xml" value="0.1" />
-        <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_place_order.xml" value="0.1" />
+        <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_order_detail_item.xml" value="0.5" />
+        <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_order_item.xml" value="0.33" />
+        <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_place_order.xml" value="0.33" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_popular_categories.xml" value="0.17806484295845998" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_popular_categories_item.xml" value="0.25" />
         <entry key="..\:/Users/ars-s/Documents/AndroidEatItV2Client/app/src/main/res/layout/layout_rating.xml" value="0.25" />

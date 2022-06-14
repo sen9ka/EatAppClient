@@ -154,7 +154,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         View headerView = navigationView.getHeaderView(0);
         TextView txt_user = (TextView) headerView.findViewById(R.id.txt_user);
-        Common.setSpanString("Hello, ", Common.currentUser.getName(),txt_user);
+        Common.setSpanString("Здравствуйте, ", Common.currentUser.getName(),txt_user);
 
         //не видим корзину при выборе ресторанов
         EventBus.getDefault().postSticky(new HideFABCart(true));
@@ -230,25 +230,25 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private void showSubscribeNews() {
         Paper.init(this);
         androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
-        builder.setTitle("News System");
-        builder.setMessage("Do you want to subscribe to notifications from us?");
+        builder.setTitle("Система новостей");
+        builder.setMessage("Подписаться на новостную рассылку?");
 
         View itemView= LayoutInflater.from(this).inflate(R.layout.layout_subscribe_news, null);
         CheckBox ckb_news = (CheckBox) itemView.findViewById(R.id.ckb_subscribe_news);
         boolean isSubscribeNews = Paper.book().read(Common.currentRestaurant.getUid(),false);
         if(isSubscribeNews)
             ckb_news.setChecked(true);
-        builder.setNegativeButton("CANCEL", (dialogInterface, i) -> {
+        builder.setNegativeButton("ОТМЕНА", (dialogInterface, i) -> {
             dialogInterface.dismiss();
-        }).setPositiveButton("SEND", (dialogInterface, i) -> {
+        }).setPositiveButton("ОТПРАВИТЬ", (dialogInterface, i) -> {
             if(ckb_news.isChecked())
             {
-                Toast.makeText(this, "TOPIC: "+Common.createTopicNews(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "ЗАГОЛОВОК: "+Common.createTopicNews(), Toast.LENGTH_SHORT).show();
                 Paper.book().write(Common.currentRestaurant.getUid(),true);
                 FirebaseMessaging.getInstance()
                         .subscribeToTopic(Common.createTopicNews())
                         .addOnFailureListener(e -> Toast.makeText(HomeActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
-                        .addOnSuccessListener(unused -> Toast.makeText(HomeActivity.this, "Successfully subscribed!", Toast.LENGTH_SHORT).show());
+                        .addOnSuccessListener(unused -> Toast.makeText(HomeActivity.this, "Подписка оформлена!", Toast.LENGTH_SHORT).show());
             }
             else
             {
@@ -256,7 +256,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 FirebaseMessaging.getInstance()
                         .unsubscribeFromTopic(Common.createTopicNews())
                         .addOnFailureListener(e -> Toast.makeText(HomeActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
-                        .addOnSuccessListener(unused -> Toast.makeText(HomeActivity.this, "Successfully unsubscribed!", Toast.LENGTH_SHORT).show());
+                        .addOnSuccessListener(unused -> Toast.makeText(HomeActivity.this, "Подписка отменена!", Toast.LENGTH_SHORT).show());
             }
         });
         builder.setView(itemView);
@@ -266,8 +266,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     private void showUpdateInfoDialog() {
         androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
-        builder.setTitle("Update Info");
-        builder.setMessage("Please Fill Information");
+        builder.setTitle("Информация обновления");
+        builder.setMessage("Пожалуйста введите информацию");
 
         View itemView= LayoutInflater.from(this).inflate(R.layout.layout_register, null);
 
@@ -296,14 +296,14 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         txt_address_detail.setText(Common.currentUser.getAddress());
         edt_phone.setText(Common.currentUser.getPhone());
 
-        builder.setNegativeButton("CANCEL", (dialogInterface, which) -> dialogInterface.dismiss());
+        builder.setNegativeButton("ОТМЕНА", (dialogInterface, which) -> dialogInterface.dismiss());
 
-        builder.setPositiveButton("UPDATE", (dialogInterface, which) -> {
+        builder.setPositiveButton("ОБНОВИТЬ", (dialogInterface, which) -> {
             if(placeSelected != null)
             {
                 if(TextUtils.isEmpty(edt_name.getText().toString()))
                 {
-                    Toast.makeText(HomeActivity.this, "Please enter Name", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(HomeActivity.this, "Пожалуйста введите имя", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -323,7 +323,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                         })
                         .addOnSuccessListener(aVoid -> {
                             dialogInterface.dismiss();
-                            Toast.makeText(HomeActivity.this, "Information successfully updated", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(HomeActivity.this, "Информация обновлена", Toast.LENGTH_SHORT).show();
                             Common.currentUser.setName(update_data.get("name").toString());
                             Common.currentUser.setAddress(update_data.get("address").toString());
                             Common.currentUser.setLat(Double.parseDouble(update_data.get("lat").toString()));
@@ -332,7 +332,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             }
             else
             {
-                Toast.makeText(this, "Please select address", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Пожалуйста выберите адрес", Toast.LENGTH_SHORT).show();
             }
 
         });
@@ -350,14 +350,14 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     private void signOut() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Sign Out")
-                .setMessage("Do you really want to sign out?")
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setTitle("Выход")
+                .setMessage("DВЫ действительно хотите выйти?")
+                .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
                     }
-                }).setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                }).setPositiveButton("Ок", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Common.selectedFood = null;
