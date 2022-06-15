@@ -58,23 +58,23 @@ public class MyCartAdapter extends RecyclerView.Adapter<MyCartAdapter.MyViewHold
         if(cartItemList.get(position).getFoodSize() != null)
         {
             if(cartItemList.get(position).getFoodSize().equals("Default"))
-                holder.txt_food_size.setText(new StringBuilder("Size: ").append("Default"));
+                holder.txt_food_size.setText(new StringBuilder("Размер: ").append("Default"));
             else
             {
                 SizeModel sizeModel = gson.fromJson(cartItemList.get(position).getFoodSize(),new TypeToken<SizeModel>(){}.getType());
-                holder.txt_food_size.setText(new StringBuilder("Size: ").append(sizeModel.getName()));
+                holder.txt_food_size.setText(new StringBuilder("Размер: ").append(sizeModel.getName()));
             }
         }
 
         if(cartItemList.get(position).getFoodAddon() != null)
         {
             if(cartItemList.get(position).getFoodAddon().equals("Default"))
-                holder.txt_food_addon.setText(new StringBuilder("Addon: ").append("Default"));
+                holder.txt_food_addon.setText(new StringBuilder("Добавки: ").append("Default"));
             else
             {
                 List<AddonModel>addonModels = gson.fromJson(cartItemList.get(position).getFoodAddon(),
                         new TypeToken<List<AddonModel>>(){}.getType());
-                holder.txt_food_addon.setText(new StringBuilder("Addon: ").append(Common.getListAddon(addonModels)));
+                holder.txt_food_addon.setText(new StringBuilder("Добавки: ").append(Common.getListAddon(addonModels)));
             }
         }
 
